@@ -1,49 +1,13 @@
 #include <Arduino.h>
-#include <ArduinoJson.h>
 
-#include "ActuatorManager.h"
+#include "BioSensorManager.h"
 #include "BleManager.h"
-#include "NetManager.h"
-#include "SensorManager.h"
 #include "config.h"
 
-SensorManager sensors;
-ActuatorManager actuators;
-NetManager net;
+BioSensorManager sensors;
 BleManager ble;
 
-uint32_t lastSensorReadMs = 0;
-
-String buildStatusJson() {
-  String json = "{";
-  json += "\"sensor\":" + sensors.toJson() + ",";
-  json += "\"led\":" + String(actuators.ledState() ? "true" : "false") + ",";
-  json += "\"servo\":" + String(actuators.servoAngle()) + ",";
-  json += "\"motor\":" + String(actuators.motorSpeed());
-  json += "}";
-  return json;
-}
-
-// Shared control protocol for both HTTP POST /api/control and the BLE
-// control characteristic: {"led":true,"servo":90,"motor":150} (any subset).
-void applyControlJson(const String &json) {
-  JsonDocument doc;
-  DeserializationError err = deserializeJson(doc, json);
-  if (err) {
-    Serial.printf("[Control] JSON parse failed: %s\n", err.c_str());
-    return;
-  }
-
-  if (!doc["led"].isNull()) {
-    actuators.setLed(doc["led"].as<bool>());
-  }
-  if (!doc["servo"].isNull()) {
-    actuators.setServoAngle(doc["servo"].as<int>());
-  }
-  if (!doc["motor"].isNull()) {
-    actuators.setMotorSpeed(doc["motor"].as<int>());
-  }
-}
+uint32_t lastNotifyMs = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -52,25 +16,24 @@ void setup() {
     delay(10);
   }
 
-  actuators.begin(STATUS_LED_PIN, SERVO_PIN, MOTOR_IN1_PIN, MOTOR_IN2_PIN);
-  sensors.begin(I2C_SDA_PIN, I2C_SCL_PIN, BME280_ADDR);
+  pinMode(STATUS_LED_PIN, OUTPUT);
+  digitalWrite(STATUS_LED_PIN, LOW);
 
-  net.begin(WIFI_SSID, WIFI_PASSWORD, WIFI_CONNECT_TIMEOUT_MS, buildStatusJson,
-            applyControlJson);
+  sensors.begin(FSR_PIN, PPG_PIN, PPG_LED_PIN, AMBIENT_PIN);
+  ble.begin(BLE_DEVICE_NAME, BLE_SERVICE_UUID, BLE_SENSOR_CHAR_UUID);
 
-  ble.begin(BLE_DEVICE_NAME, BLE_SERVICE_UUID, BLE_SENSOR_CHAR_UUID,
-            BLE_CONTROL_CHAR_UUID, applyControlJson);
-
-  Serial.println("[PLATO] Ready");
+  Serial.println("[PLATO] Sensing node ready");
 }
 
 void loop() {
-  net.loop();
+  sensors.sample();
+  digitalWrite(STATUS_LED_PIN, sensors.gripDetected() ? HIGH : LOW);
 
   uint32_t now = millis();
-  if (now - lastSensorReadMs >= SENSOR_READ_INTERVAL_MS) {
-    lastSensorReadMs = now;
-    sensors.update();
-    ble.notifySensor(sensors.toJson());
+  if (now - lastNotifyMs >= BLE_NOTIFY_INTERVAL_MS) {
+    lastNotifyMs = now;
+    String json = sensors.toJson();
+    ble.notifySensor(json);
+    Serial.println(json);
   }
 }

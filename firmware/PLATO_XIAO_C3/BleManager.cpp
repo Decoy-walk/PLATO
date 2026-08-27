@@ -1,15 +1,7 @@
 #include "BleManager.h"
 
-void BleManager::ControlCallbacks::onWrite(NimBLECharacteristic *characteristic) {
-  if (cb_) {
-    cb_(String(characteristic->getValue().c_str()));
-  }
-}
-
 void BleManager::begin(const char *deviceName, const char *serviceUuid,
-                        const char *sensorCharUuid,
-                        const char *controlCharUuid,
-                        ControlCallback onControl) {
+                        const char *sensorCharUuid) {
   NimBLEDevice::init(deviceName);
 
   NimBLEServer *server = NimBLEDevice::createServer();
@@ -17,11 +9,6 @@ void BleManager::begin(const char *deviceName, const char *serviceUuid,
 
   sensorChar_ = service->createCharacteristic(
       sensorCharUuid, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
-
-  controlChar_ =
-      service->createCharacteristic(controlCharUuid, NIMBLE_PROPERTY::WRITE);
-  controlCallbacks_ = new ControlCallbacks(onControl);
-  controlChar_->setCallbacks(controlCallbacks_);
 
   service->start();
 

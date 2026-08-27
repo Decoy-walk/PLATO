@@ -2,30 +2,15 @@
 
 #include <Arduino.h>
 #include <NimBLEDevice.h>
-#include <functional>
 
-// BLE GATT service mirroring the HTTP control protocol for local/offline
-// control (e.g. from nRF Connect or a phone app) via NimBLE-Arduino.
+// BLE GATT service that streams derived interaction features (grip force,
+// heart rate) as JSON notifications for a PC-side logging bridge.
 class BleManager {
 public:
-  using ControlCallback = std::function<void(const String &json)>;
-
   void begin(const char *deviceName, const char *serviceUuid,
-             const char *sensorCharUuid, const char *controlCharUuid,
-             ControlCallback onControl);
+             const char *sensorCharUuid);
   void notifySensor(const String &json);
 
 private:
-  class ControlCallbacks : public NimBLECharacteristicCallbacks {
-  public:
-    explicit ControlCallbacks(ControlCallback cb) : cb_(cb) {}
-    void onWrite(NimBLECharacteristic *characteristic) override;
-
-  private:
-    ControlCallback cb_;
-  };
-
   NimBLECharacteristic *sensorChar_ = nullptr;
-  NimBLECharacteristic *controlChar_ = nullptr;
-  ControlCallbacks *controlCallbacks_ = nullptr;
 };
