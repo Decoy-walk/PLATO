@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""BLE bridge for PLATO sensing nodes.
+"""BLE bridge for PLATO folding-block sensing nodes.
 
-Connects to one or more XIAO ESP32C3 PLATO nodes (see
-firmware/PLATO_XIAO_C3), logs their BLE sensor notifications to a local CSV,
-and optionally git-commits the log and/or forwards each row to a Google
-Sheet via an Apps Script Web App.
+Connects to one or more XIAO ESP32C3 PLATO folding-block nodes (see
+firmware/PLATO_XIAO_C3), logs their BLE fold-state notifications to a local
+CSV, and optionally git-commits the log and/or forwards each row to a
+Google Sheet via an Apps Script Web App.
 """
 from __future__ import annotations
 
 import argparse
 import asyncio
 import csv
-import json
 import os
 import subprocess
 import sys
@@ -24,7 +23,28 @@ from bleak import BleakClient, BleakScanner
 # Must match BLE_SENSOR_CHAR_UUID in firmware/PLATO_XIAO_C3/config.h
 SENSOR_CHAR_UUID = "6f2a0002-8b1e-4a3e-9d0a-0000000000a1"
 
-CSV_FIELDS = ["timestamp_utc", "node", "fsr", "grip", "ambient", "bpm"]
+HINGE_COUNT = 20
+CSV_FIELDS = ["timestamp_utc", "node", "haptic_active", "haptic_enabled"] + [
+    f"hinge_{i:02d}" for i in range(HINGE_COUNT)
+]
+
+
+def decode_payload(data: bytes) -> dict:
+    """Unpacks the firmware's 4-byte notification: 3 bytes of 20-hinge fold
+    bitmask (LSB first) + 1 flags byte (bit0 haptic active, bit1 haptic
+    feedback condition enabled)."""
+    if len(data) < 4:
+        raise ValueError(f"expected 4 bytes, got {len(data)}")
+    bitmask = data[0] | (data[1] << 8) | (data[2] << 16)
+    flags = data[3]
+
+    reading = {
+        "haptic_active": bool(flags & 0x01),
+        "haptic_enabled": bool(flags & 0x02),
+    }
+    for i in range(HINGE_COUNT):
+        reading[f"hinge_{i:02d}"] = int(bool(bitmask & (1 << i)))
+    return reading
 
 
 class Sink:
@@ -44,14 +64,9 @@ class Sink:
                 csv.DictWriter(f, fieldnames=CSV_FIELDS).writeheader()
 
     def record(self, node: str, reading: dict) -> None:
-        row = {
-            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            "node": node,
-            "fsr": reading.get("fsr"),
-            "grip": reading.get("grip"),
-            "ambient": reading.get("ambient"),
-            "bpm": reading.get("bpm"),
-        }
+        row = {"timestamp_utc": datetime.now(timezone.utc).isoformat(), "node": node}
+        row.update(reading)
+
         with self.csv_path.open("a", newline="") as f:
             csv.DictWriter(f, fieldnames=CSV_FIELDS).writerow(row)
 
@@ -87,12 +102,13 @@ class Sink:
 def make_notify_handler(node_name: str, sink: Sink):
     def _handler(_sender, data: bytearray) -> None:
         try:
-            reading = json.loads(data.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            reading = decode_payload(bytes(data))
+        except ValueError as exc:
             print(f"[{node_name}] bad payload: {exc}", file=sys.stderr)
             return
         sink.record(node_name, reading)
-        print(f"[{node_name}] {reading}")
+        folded = [i for i in range(HINGE_COUNT) if reading[f"hinge_{i:02d}"]]
+        print(f"[{node_name}] folded={folded} haptic_active={reading['haptic_active']}")
 
     return _handler
 
@@ -125,7 +141,7 @@ async def run(args: argparse.Namespace) -> int:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="BLE bridge: PLATO sensing node(s) -> CSV / git / Google Sheets"
+        description="BLE bridge: PLATO folding-block node(s) -> CSV / git / Google Sheets"
     )
     parser.add_argument(
         "--device-prefix",

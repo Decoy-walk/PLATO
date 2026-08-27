@@ -17,11 +17,8 @@ void BleManager::begin(const char *deviceName, const char *serviceUuid,
   advertising->start();
 }
 
-void BleManager::notifySensor(const String &json) {
+void BleManager::notify(const uint8_t *data, size_t len) {
   if (sensorChar_ == nullptr) return;
-  // Wrap explicitly in std::string: NimBLECharacteristic::setValue() also has
-  // a generic template overload that a bare const char* can bind to,
-  // copying the pointer's bytes instead of the string it points to.
-  sensorChar_->setValue(std::string(json.c_str(), json.length()));
+  sensorChar_->setValue(data, len);
   sensorChar_->notify();
 }

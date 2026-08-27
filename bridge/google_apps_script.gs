@@ -6,14 +6,12 @@ function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var row = JSON.parse(e.postData.contents);
 
-  sheet.appendRow([
-    row.timestamp_utc,
-    row.node,
-    row.fsr,
-    row.grip,
-    row.ambient,
-    row.bpm,
-  ]);
+  var values = [row.timestamp_utc, row.node, row.haptic_active, row.haptic_enabled];
+  for (var i = 0; i < 20; i++) {
+    var key = "hinge_" + (i < 10 ? "0" + i : i);
+    values.push(row[key]);
+  }
+  sheet.appendRow(values);
 
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true }))

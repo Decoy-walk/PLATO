@@ -1,15 +1,15 @@
 # PLATO — Embodied Memory via Material Interaction
 
-Research prototype exploring how sensed hand↔object interaction (grip force
-and physiological/bio signal) with a 3D structure can be logged and analyzed
-to study **embodied memory**. A sensing node is embedded in the 3D structure,
-powered wirelessly (no battery/cable through the object), and streams
-interaction data over BLE to a PC bridge that logs it to CSV, git, and/or a
+Research prototype for testing whether tactile-motor interaction with a
+physical folding-block device activates procedural memory as a
+supplementary channel, improving recall vs. text-only encoding. A sensing
+node embedded in the folding block tracks all 20 hinges and streams the
+fold state over BLE to a PC bridge that logs it to CSV, git, and/or a
 Google Sheet.
 
 ```
- hand  ⇄  3D structure (FSR402 + NJL5513R + BPW34, wirelessly powered)
-                 │  BLE notify (~10 Hz JSON)
+ hand  ⇄  folding block (20 flex-sensor hinges + haptic actuator)
+                 │  BLE notify (~20 Hz, 4-byte fold bitmask)
                  ▼
          bridge/plato_bridge.py  (PC)
                  │
@@ -20,60 +20,91 @@ Google Sheet.
 
 ## Hardware
 
-| Component                          | Role                                                              |
-|-------------------------------------|---------------------------------------------------------------------|
-| Seeed XIAO ESP32C3                  | MCU: samples sensors, runs the BLE peripheral                       |
-| FSR402 (short tail)                 | Grip/press force where the hand contacts the structure               |
-| NJL5513R                            | Reflectance photo-IC + LED — bio/pulse (PPG) signal through the skin |
-| BPW34                               | Bare PIN photodiode — ambient-light reference to cancel ambient noise from the PPG channel |
-| Wireless power transfer (Tx/Rx pair)| Powers the embedded node with no wire passing through the structure  |
+| Component                       | Role                                                    |
+|-----------------------------------|------------------------------------------------------------|
+| Seeed XIAO ESP32C3               | MCU: scans the 20 hinges, drives haptic feedback, runs BLE |
+| 20× flex sensor (one per hinge)  | Captures the fold sequence as the hand manipulates the block |
+| 2× CD74HC4067 (16-channel analog mux) | Multiplexes 20 flex-sensor channels onto 1 ADC pin      |
+| Haptic/ERM motor + driver transistor | "Block + haptic feedback" condition's feedback channel |
+
+### Why a mux instead of more ADC pins or an I2C ADC expander
+
+XIAO ESP32C3 only exposes 3-4 ADC1-capable pins (ADC2 conflicts with the
+BLE radio), nowhere near 20. Rather than adding 5× I2C ADC boards
+(e.g. ADS1115) to get 20 native channels, this design keeps the channel
+count matched to what the board can actually do: two CD74HC4067 16-channel
+analog muxes (32 channels available, 20 used) share 4 address lines and
+time-multiplex all 20 flex sensors onto a **single** ADC pin. Only one
+mux's active-low `EN` is driven low at a time; the other's output stays
+high-impedance, so both chips' common `SIG` pins can tie to the same ADC
+input. Net cost: 1 ADC pin + 6 digital GPIO instead of 20 ADC pins or extra
+I2C ADC hardware.
 
 ### Pins (Seeed XIAO ESP32C3 silkscreen labels)
 
-| Function                | XIAO pin | ESP32C3 GPIO   | Notes |
-|--------------------------|----------|-----------------|-------|
-| FSR402 (voltage divider) | D0       | GPIO2 (ADC1_CH2)| `3V3 — FSR402 — D0 — 10kΩ — GND` |
-| NJL5513R output          | D1       | GPIO3 (ADC1_CH3)| Photo-IC output goes straight to the ADC (internal amp); add a 100 nF cap output→GND and 0.1 µF supply decoupling per its datasheet |
-| BPW34 (ambient ref.)     | D2       | GPIO4 (ADC1_CH4)| Reverse-biased: cathode→3V3, anode→D2, D2→1 MΩ→GND. Mount away from the NJL5513R's LED so it only sees ambient light |
-| PPG reflectance LED      | D3       | GPIO5           | Green/IR LED + current-limit resistor, aimed at the same skin contact point as NJL5513R |
-| Grip feedback LED        | D4       | GPIO6           | Lights while `fsr > FSR_GRIP_THRESHOLD` — real-time affordance for the person interacting with the structure |
+| Function                     | XIAO pin | ESP32C3 GPIO | Notes |
+|-------------------------------|----------|--------------|-------|
+| Mux common analog output      | D0       | GPIO2 (ADC1_CH2) | Both CD74HC4067 `SIG` pins tie here |
+| Mux address S0                | D1       | GPIO3        | Shared between both mux chips |
+| Mux address S1                | D2       | GPIO4        | |
+| Mux address S2                | D3       | GPIO5        | |
+| Mux address S3                | D4       | GPIO6        | |
+| Mux A enable (active-low)     | D5       | GPIO7        | Selects hinges 0-15 |
+| Mux B enable (active-low)     | D6       | GPIO21       | Selects hinges 16-19 (channels 4-15 of mux B unused) |
+| Haptic actuator PWM           | D7       | GPIO20       | To a transistor driving the ERM/LRA motor (+ flyback diode) |
+| Status LED                    | D10      | GPIO10       | Lit while any hinge reads folded |
 
-All three analog sensors are wired to ADC1-only pins on purpose: ESP32-C3's
-ADC2 conflicts with the radio, and this node is broadcasting over BLE
-continuously.
-
-> The FSR402/NJL5513R/BPW34 bias circuits above are the minimum viable
-> analog front end for a prototype. For research-grade PPG/HRV, a dedicated
-> transimpedance-amp + bandpass front end (e.g. MAX30101-class AFE) will be
-> materially cleaner than reading a bare photodiode through the MCU's ADC —
-> treat this build as "good enough to detect interaction, not clinical
-> signal quality."
+Each flex sensor forms its own voltage divider into its mux channel:
+`3V3 — flexSensor — muxChannel — 10kΩ — GND`. Both mux chips' `S0-S3` are
+wired in parallel; `EN` pins are separate so the firmware can choose which
+16-channel bank is currently driving the shared `SIG`/ADC line.
 
 ## Firmware (`firmware/PLATO_XIAO_C3/`)
 
 ```
-PLATO_XIAO_C3.ino     # setup/loop
-config.h               # pins, BLE UUIDs, sampling + detection constants
-BioSensorManager.*     # FSR grip force, NJL5513R/BPW34 ambient-cancelled PPG
-BleManager.*           # BLE GATT service (NimBLE-Arduino)
-sketch.yaml            # arduino-cli profile (board + pinned library version)
+PLATO_XIAO_C3.ino    # setup/loop, serial commands, condition toggling
+config.h              # pins, mux/timing/haptic constants, BLE UUIDs
+FlexMuxManager.*      # mux channel scanning, per-hinge calibration (NVS), fold bitmask
+HapticManager.*       # non-blocking haptic pulse control
+BleManager.*          # BLE GATT service (NimBLE-Arduino)
+sketch.yaml           # arduino-cli profile (board + pinned library version)
 ```
 
-Every `BLE_NOTIFY_INTERVAL_MS` (10 Hz default) the node notifies a JSON
-payload on `BLE_SENSOR_CHAR_UUID`:
+### Calibration (per-hinge variance)
 
-```json
-{"fsr": 1830, "grip": true, "ambient": 512, "bpm": 74}
-```
+Flex-sensor voltage-divider output varies hinge-to-hinge (resistance range,
+mounting preload). Rather than a single global threshold, each hinge gets
+its own calibrated min/max:
 
-- `fsr` / `grip`: raw ADC reading and threshold-crossing boolean for press/grip force.
-- `ambient`: raw BPW34 reading (also useful on its own as a lighting-condition log).
-- `bpm`: instantaneous heart rate from the ambient-cancelled PPG beat detector (0 until a beat has been seen).
+- Send `c` over the serial monitor to start a 15 s calibration window
+  (`CALIBRATION_DURATION_MS`); fold/unfold every hinge through its full
+  range while it runs.
+- Results are saved to NVS (`Preferences`, namespace `platocal`) and printed
+  per-hinge, so you have a `min/max/range` table to report alongside the
+  data — this is the explicit bounding of per-hinge variance flagged as an
+  internal-validity concern for the write-up.
+- Run this once per session (or per participant) rather than relying on a
+  factory-flashed default, since divider output can drift with sensor wear.
 
-The PPG algorithm (`BioSensorManager::sample`) is a simple dual-EMA
-threshold detector, not a validated HRV pipeline — see `config.h` for the
-tunable constants (`PPG_*`) if beats aren't triggering reliably against your
-skin tone/contact pressure.
+### Condition toggling
+
+`h` over serial toggles haptic feedback on/off at runtime, so the same
+flashed firmware serves both the **Block (motor only)** and **Block +
+haptic feedback** study arms without reflashing between participants. The
+condition flag is included in every BLE notification (see below) so it's
+logged automatically rather than needing to be tracked by hand.
+
+### BLE payload
+
+Every `BLE_NOTIFY_INTERVAL_MS` (20 Hz default) the node notifies a 4-byte
+binary payload on `BLE_SENSOR_CHAR_UUID` — binary rather than JSON so a
+20-hinge reading always fits one ATT notification regardless of whether
+the central negotiated a larger MTU:
+
+| Byte | Content |
+|------|---------|
+| 0-2  | 20-bit fold bitmask, LSB first (bit *i* = hinge *i* folded) |
+| 3    | bit0: haptic pulse currently firing · bit1: haptic-feedback condition enabled |
 
 ### Setup
 
@@ -103,9 +134,8 @@ scripts/monitor.sh /dev/ttyACM0
 
 ## PC bridge (`bridge/`)
 
-Since the node is wirelessly powered and BLE-only (no on-board Wi-Fi
-credentials/HTTP stack to keep the power budget and complexity down), the PC
-running the bridge is what has real internet access — it fans each reading
+The node is BLE-only (no on-board Wi-Fi) to keep the embedded side simple;
+the PC running the bridge has real internet access and fans each reading
 out to a local CSV, an optional git commit+push, and/or a Google Sheet.
 
 ```bash
@@ -121,17 +151,22 @@ python bridge/plato_bridge.py \
 ```
 
 - `--device-prefix` (default `PLATO-`): connects to every advertised BLE
-  device whose name starts with this, so adding more structures/nodes later
-  is just flashing each with a distinct `BLE_DEVICE_NAME` in `config.h`
-  (e.g. `PLATO-A`, `PLATO-B`) — no bridge code changes needed.
-- `--csv` (default `data/plato_log.csv`): local log, one row per reading,
-  columns `timestamp_utc,node,fsr,grip,ambient,bpm`.
+  device whose name starts with this, so multiple structures/nodes are just
+  a matter of flashing each with a distinct `BLE_DEVICE_NAME` — no bridge
+  code changes needed.
+- `--csv` (default `data/plato_log.csv`): one row per BLE notification,
+  columns `timestamp_utc,node,haptic_active,haptic_enabled,hinge_00..hinge_19`.
+  Logging every snapshot (not just transitions) means a dropped BLE
+  notification never loses an event — fold-sequence order and per-hinge
+  transition timing (for the Kendall's Tau / Spearman's rho / edit-distance
+  analyses) are reconstructed from the time series afterward, not relied on
+  from the stream itself.
 - `--git-commit-every N`: commit+push the CSV every N new rows (0 disables).
   Requires the bridge to run somewhere with push access to this repo.
 - `--sheets-url` / `GOOGLE_SHEETS_WEBHOOK_URL`: POSTs each row as JSON to a
   Google Apps Script Web App. See `bridge/google_apps_script.gs` for the
-  ~10-line script to paste into a target Sheet's Apps Script editor and
-  deploy as a Web App (Extensions → Apps Script → Deploy → New deployment).
+  script to paste into a target Sheet's Apps Script editor and deploy as a
+  Web App (Extensions → Apps Script → Deploy → New deployment).
 
 If a node disconnects mid-session, restart the bridge — it's a straight
 scan-and-stream loop, no reconnect logic yet.
@@ -140,9 +175,9 @@ scan-and-stream loop, no reconnect logic yet.
 
 - Multiple structures/nodes: give each a unique `BLE_DEVICE_NAME`; the
   bridge already fans in every matching device concurrently.
-- Swap/add sensors by extending `BioSensorManager` and the JSON schema in
-  `PLATO_XIAO_C3.ino` — keep new analog channels on ADC1 pins (GPIO0-4 on
-  this chip).
+- More/fewer hinges: `FlexMuxManager::kChannelCount` and the mux wiring
+  scale to any count up to 32 (two 16-channel muxes) without firmware
+  changes beyond that constant.
 - For an XIAO ESP32S3 build, add a second `sketch.yaml` profile with
-  `fqbn: esp32:esp32:XIAO_ESP32S3` and re-check its ADC1 pin map before
-  reusing the same `config.h` pin assignments.
+  `fqbn: esp32:esp32:XIAO_ESP32S3` — the mux approach is unaffected since it
+  only ever needs one ADC-capable pin.
