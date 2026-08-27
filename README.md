@@ -59,6 +59,15 @@ Each flex sensor forms its own voltage divider into its mux channel:
 wired in parallel; `EN` pins are separate so the firmware can choose which
 16-channel bank is currently driving the shared `SIG`/ADC line.
 
+## Two separate firmware builds
+
+- `firmware/PLATO_XIAO_C3/` — the research build described below (ESP32C3,
+  20-hinge sensing, BLE, PC bridge).
+- `firmware/PLATO_EXHIBIT_SAMD21/` — a standalone exhibition-only build
+  (Seeeduino XIAO/SAMD21, single flex sensor + LED, no wireless). See its
+  own README for wiring and setup. Built for a specific 7-day exhibition
+  deadline, not the formal study.
+
 ## Firmware (`firmware/PLATO_XIAO_C3/`)
 
 ```
