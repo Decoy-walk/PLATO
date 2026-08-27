@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Open a serial monitor to the XIAO ESP32C3.
+# Open a serial monitor to the XIAO SAMD21.
 # Usage: scripts/monitor.sh [port]   (default: /dev/ttyACM0)
 set -euo pipefail
 

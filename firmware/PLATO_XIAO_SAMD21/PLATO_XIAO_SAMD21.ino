@@ -1,13 +1,13 @@
 #include <Arduino.h>
 
-#include "BleManager.h"
 #include "FlexMuxManager.h"
 #include "HapticManager.h"
+#include "SerialTransport.h"
 #include "config.h"
 
 FlexMuxManager flex;
 HapticManager haptic;
-BleManager ble;
+SerialTransport transport;
 
 bool hapticEnabled = HAPTIC_ENABLED_DEFAULT;
 uint32_t lastScanMs = 0;
@@ -24,27 +24,29 @@ void handleSerialCommands() {
     flex.calibrate(CALIBRATION_DURATION_MS);
   } else if (c == 'h' || c == 'H') {
     hapticEnabled = !hapticEnabled;
-    Serial.printf("[PLATO] Haptic feedback %s\n",
-                  hapticEnabled ? "ENABLED" : "disabled");
+    Serial.println(hapticEnabled ? "[PLATO] Haptic feedback ENABLED"
+                                  : "[PLATO] Haptic feedback disabled");
   }
 }
 
 void setup() {
-  Serial.begin(115200);
+  transport.begin(SERIAL_BAUD);
   uint32_t bootStart = millis();
   while (!Serial && millis() - bootStart < 2000) {
     delay(10);
   }
 
+  analogReadResolution(12); // match the ESP32C3 build's ADC precision
+
   flex.begin(MUX_ADC_PIN, MUX_S0_PIN, MUX_S1_PIN, MUX_S2_PIN, MUX_S3_PIN,
              MUX_EN_A_PIN, MUX_EN_B_PIN);
   haptic.begin(HAPTIC_PIN);
-  ble.begin(BLE_DEVICE_NAME, BLE_SERVICE_UUID, BLE_SENSOR_CHAR_UUID);
 
   pinMode(STATUS_LED_PIN, OUTPUT);
 
-  Serial.println("[PLATO] Folding-block node ready.");
+  Serial.println("[PLATO] Folding-block node ready (wired serial build).");
   Serial.println("  'c' = (re)calibrate all 20 hinges, 'h' = toggle haptic feedback");
+  Serial.println("  Calibration is RAM-only - run 'c' again after every power cycle.");
 }
 
 void loop() {
@@ -67,7 +69,7 @@ void loop() {
 
   haptic.update();
 
-  if (now - lastNotifyMs >= BLE_NOTIFY_INTERVAL_MS) {
+  if (now - lastNotifyMs >= NOTIFY_INTERVAL_MS) {
     lastNotifyMs = now;
     // 3 bytes: 20-bit fold bitmask (LSB first). 4th byte: bit0 = haptic
     // pulse currently firing, bit1 = haptic-feedback condition enabled.
@@ -78,6 +80,6 @@ void loop() {
         (uint8_t)((haptic.isActive() ? 0x01 : 0x00) |
                   (hapticEnabled ? 0x02 : 0x00)),
     };
-    ble.notify(payload, sizeof(payload));
+    transport.send(payload, sizeof(payload));
   }
 }

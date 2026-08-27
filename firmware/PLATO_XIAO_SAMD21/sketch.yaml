@@ -1,0 +1,8 @@
+profiles:
+  xiao_samd21:
+    fqbn: Seeeduino:samd:seeed_XIAO_m0
+    platforms:
+      - platform: Seeeduino:samd (1.8.6)
+        platform_index_url: https://files.seeedstudio.com/arduino/package_seeeduino_boards_index.json
+
+default_profile: xiao_samd21

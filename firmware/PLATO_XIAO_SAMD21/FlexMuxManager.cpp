@@ -22,7 +22,11 @@ void FlexMuxManager::begin(uint8_t adcPin, uint8_t s0Pin, uint8_t s1Pin,
   digitalWrite(enA_, HIGH); // both muxes disabled until a channel is selected
   digitalWrite(enB_, HIGH);
 
-  loadCalibration();
+  // Uncalibrated defaults (full ADC range) until 'calibrate()' is run.
+  for (uint8_t i = 0; i < kChannelCount; i++) {
+    calMin_[i] = 0;
+    calMax_[i] = 4095;
+  }
 }
 
 void FlexMuxManager::selectChannel(uint8_t globalIndex) {
@@ -73,35 +77,11 @@ void FlexMuxManager::calibrate(uint32_t durationMs) {
     }
   }
 
-  saveCalibration();
-
-  Serial.println("[Calibration] Done, saved. Per-hinge range:");
+  Serial.println("[Calibration] Done. Per-hinge range:");
   for (uint8_t i = 0; i < kChannelCount; i++) {
-    Serial.printf("  hinge %2u: min=%4d max=%4d range=%4d\n", i, calMin_[i],
-                  calMax_[i], calMax_[i] - calMin_[i]);
+    char line[64];
+    snprintf(line, sizeof(line), "  hinge %2u: min=%4d max=%4d range=%4d", i,
+             calMin_[i], calMax_[i], calMax_[i] - calMin_[i]);
+    Serial.println(line);
   }
-}
-
-void FlexMuxManager::loadCalibration() {
-  prefs_.begin("platocal", true);
-  for (uint8_t i = 0; i < kChannelCount; i++) {
-    char keyMin[8], keyMax[8];
-    snprintf(keyMin, sizeof(keyMin), "min%u", i);
-    snprintf(keyMax, sizeof(keyMax), "max%u", i);
-    calMin_[i] = prefs_.getInt(keyMin, 0);
-    calMax_[i] = prefs_.getInt(keyMax, 4095);
-  }
-  prefs_.end();
-}
-
-void FlexMuxManager::saveCalibration() {
-  prefs_.begin("platocal", false);
-  for (uint8_t i = 0; i < kChannelCount; i++) {
-    char keyMin[8], keyMax[8];
-    snprintf(keyMin, sizeof(keyMin), "min%u", i);
-    snprintf(keyMax, sizeof(keyMax), "max%u", i);
-    prefs_.putInt(keyMin, calMin_[i]);
-    prefs_.putInt(keyMax, calMax_[i]);
-  }
-  prefs_.end();
 }

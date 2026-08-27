@@ -1,27 +1,31 @@
 #!/usr/bin/env python3
-"""BLE bridge for PLATO folding-block sensing nodes.
+"""Serial bridge for PLATO folding-block sensing nodes.
 
-Connects to one or more XIAO ESP32C3 PLATO folding-block nodes (see
-firmware/PLATO_XIAO_C3), logs their BLE fold-state notifications to a local
-CSV, and optionally git-commits the log and/or forwards each row to a
-Google Sheet via an Apps Script Web App.
+Reads the wired-USB fold-state stream from one or more XIAO SAMD21 PLATO
+folding-block nodes (see firmware/PLATO_XIAO_SAMD21 - SAMD21 has no
+on-board radio, so this is a wired interim transport pending a BLE-module
+decision), logs it to a local CSV, and optionally git-commits the log
+and/or forwards each row to a Google Sheet via an Apps Script Web App.
 """
 from __future__ import annotations
 
 import argparse
-import asyncio
 import csv
 import os
 import subprocess
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
-from bleak import BleakClient, BleakScanner
+import serial
 
-# Must match BLE_SENSOR_CHAR_UUID in firmware/PLATO_XIAO_C3/config.h
-SENSOR_CHAR_UUID = "6f2a0002-8b1e-4a3e-9d0a-0000000000a1"
+# Must match SERIAL_SYNC_BYTE_1/2 and the payload layout in
+# firmware/PLATO_XIAO_SAMD21/config.h and SerialTransport.cpp.
+SYNC_BYTE_1 = 0xAA
+SYNC_BYTE_2 = 0x55
+PAYLOAD_LEN = 4
 
 HINGE_COUNT = 20
 CSV_FIELDS = ["timestamp_utc", "node", "haptic_active", "haptic_enabled"] + [
@@ -30,11 +34,11 @@ CSV_FIELDS = ["timestamp_utc", "node", "haptic_active", "haptic_enabled"] + [
 
 
 def decode_payload(data: bytes) -> dict:
-    """Unpacks the firmware's 4-byte notification: 3 bytes of 20-hinge fold
+    """Unpacks the firmware's 4-byte frame body: 3 bytes of 20-hinge fold
     bitmask (LSB first) + 1 flags byte (bit0 haptic active, bit1 haptic
     feedback condition enabled)."""
-    if len(data) < 4:
-        raise ValueError(f"expected 4 bytes, got {len(data)}")
+    if len(data) != PAYLOAD_LEN:
+        raise ValueError(f"expected {PAYLOAD_LEN} bytes, got {len(data)}")
     bitmask = data[0] | (data[1] << 8) | (data[2] << 16)
     flags = data[3]
 
@@ -99,55 +103,67 @@ class Sink:
             print(f"[git] commit/push failed: {exc}", file=sys.stderr)
 
 
-def make_notify_handler(node_name: str, sink: Sink):
-    def _handler(_sender, data: bytearray) -> None:
-        try:
-            reading = decode_payload(bytes(data))
-        except ValueError as exc:
-            print(f"[{node_name}] bad payload: {exc}", file=sys.stderr)
-            return
-        sink.record(node_name, reading)
-        folded = [i for i in range(HINGE_COUNT) if reading[f"hinge_{i:02d}"]]
-        print(f"[{node_name}] folded={folded} haptic_active={reading['haptic_active']}")
+def read_frames(ser: serial.Serial):
+    """Generator that yields each frame's 4-byte payload, resyncing on the
+    2-byte marker before every frame (cheap enough at ~20 Hz, and self-heals
+    if a byte is ever lost/corrupted on the wire)."""
+    while True:
+        b = ser.read(1)
+        if not b or b[0] != SYNC_BYTE_1:
+            continue
+        b2 = ser.read(1)
+        if not b2 or b2[0] != SYNC_BYTE_2:
+            continue
+        payload = ser.read(PAYLOAD_LEN)
+        if len(payload) != PAYLOAD_LEN:
+            continue
+        yield payload
 
-    return _handler
 
-
-async def stream_node(device, sink: Sink) -> None:
-    node_name = device.name or device.address
-    async with BleakClient(device) as client:
-        await client.start_notify(SENSOR_CHAR_UUID, make_notify_handler(node_name, sink))
+def stream_node(port: str, baud: int, sink: Sink) -> None:
+    node_name = port
+    with serial.Serial(port, baud, timeout=1) as ser:
         print(f"[{node_name}] connected, streaming...")
-        while client.is_connected:
-            await asyncio.sleep(1)
-    print(f"[{node_name}] disconnected")
+        for payload in read_frames(ser):
+            try:
+                reading = decode_payload(payload)
+            except ValueError as exc:
+                print(f"[{node_name}] bad payload: {exc}", file=sys.stderr)
+                continue
+            sink.record(node_name, reading)
+            folded = [i for i in range(HINGE_COUNT) if reading[f"hinge_{i:02d}"]]
+            print(f"[{node_name}] folded={folded} haptic_active={reading['haptic_active']}")
 
 
-async def run(args: argparse.Namespace) -> int:
+def run(args: argparse.Namespace) -> int:
     sink = Sink(Path(args.csv), args.git_commit_every, args.sheets_url)
 
-    print(f"Scanning {args.scan_timeout}s for devices starting with '{args.device_prefix}'...")
-    devices = await BleakScanner.discover(timeout=args.scan_timeout)
-    targets = [d for d in devices if d.name and d.name.startswith(args.device_prefix)]
-
-    if not targets:
-        print("No matching PLATO nodes found.", file=sys.stderr)
+    ports = [p.strip() for p in args.ports.split(",") if p.strip()]
+    if not ports:
+        print("No serial ports given.", file=sys.stderr)
         return 1
 
-    print(f"Found {len(targets)} node(s): {[d.name for d in targets]}")
-    await asyncio.gather(*(stream_node(d, sink) for d in targets))
+    threads = [
+        threading.Thread(target=stream_node, args=(port, args.baud, sink), daemon=True)
+        for port in ports
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
     return 0
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="BLE bridge: PLATO folding-block node(s) -> CSV / git / Google Sheets"
+        description="Serial bridge: PLATO folding-block node(s) -> CSV / git / Google Sheets"
     )
     parser.add_argument(
-        "--device-prefix",
-        default="PLATO-",
-        help="connect to any advertised BLE name starting with this (default: %(default)s)",
+        "--ports",
+        default="/dev/ttyACM0",
+        help="comma-separated serial port(s), one per node (default: %(default)s)",
     )
+    parser.add_argument("--baud", type=int, default=115200, help="must match SERIAL_BAUD in config.h")
     parser.add_argument(
         "--csv", default="data/plato_log.csv", help="local CSV log path (default: %(default)s)"
     )
@@ -162,9 +178,8 @@ def parse_args() -> argparse.Namespace:
         default=os.environ.get("GOOGLE_SHEETS_WEBHOOK_URL"),
         help="Google Apps Script Web App URL (or set GOOGLE_SHEETS_WEBHOOK_URL)",
     )
-    parser.add_argument("--scan-timeout", type=float, default=5.0)
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    raise SystemExit(asyncio.run(run(parse_args())))
+    raise SystemExit(run(parse_args()))
