@@ -77,6 +77,12 @@ wired in parallel; `EN` pins are separate so the firmware can choose which
   since it's a different physical object (a single squeeze-force joint,
   not 20 independently-sensed hinges) built for a specific exhibition
   deadline, not the formal study.
+- `firmware/Plato_002_fsr_led_buzzer_vibration/` — post-exhibition
+  extension of `Plato_001_fsr_led`: adds a 600 Hz piezo buzzer and a
+  vibration-motor module, both triggered together above a squeeze-force
+  threshold. `Plato_001_fsr_led` is left untouched as the historical record
+  of what actually showed at Maker Faire; new sensory layers land in their
+  own numbered sketch instead.
 
 ## Firmware (`firmware/PLATO_XIAO_SAMD21/`)
 
