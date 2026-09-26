@@ -23,11 +23,25 @@ hole size).
 
 ## Keeping CAD and firmware in sync
 
-The physical hinge count/layout and `firmware/PLATO_XIAO_C3/config.h` /
+The physical hinge count/layout and `firmware/PLATO_XIAO_SAMD21/config.h` /
 `FlexMuxManager::kChannelCount` need to agree. When exporting a new revision
 that changes hinge count or numbering order, note it in the commit message
 and update `kChannelCount` (and the mux wiring notes in the top-level
 `README.md`) in the same PR so the two never drift apart silently.
+
+## Wiring diagrams
+
+`plato_002_wiring_diagram.dxf` is a 2D reference schematic (not to scale)
+for `firmware/Plato_002_fsr_led_buzzer_vibration/` — the XIAO SAMD21, FSR402
+voltage divider, LED, buzzer, and vibration motor module, laid out with
+shared 3V3/GND rails. Generated with [ezdxf](https://ezdxf.mozman.at/) so
+it's plain vector geometry on named layers (`WIRES`, `COMPONENTS`, `RAILS`,
+`LABELS`) — open it in Fusion 360 via **Insert > Insert DXF** into a sketch
+(or any other DXF-reading CAD/vector tool). It's a schematic aid for
+building the breadboard circuit, not a to-scale footprint layout — for the
+exact breadboard row-by-row wiring, see
+`firmware/Plato_001_fsr_led/README.md` and
+`firmware/Plato_002_fsr_led_buzzer_vibration/README.md`.
 
 ## Adding a new export
 
