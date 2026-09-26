@@ -27,26 +27,53 @@ separate hardware addition (audio amp + exciter, or a software
 visualization driven by a mic input) — flag it as its own task rather than
 folding it into this sketch.
 
-## Wiring
+## Wiring (no-rail mini breadboard)
 
-Builds on the `Plato_001_fsr_led` breadboard (FSR on A0, LED on D9 — see
-that folder's README for those rows). Adds:
+Builds on the `Plato_001_fsr_led` breadboard (FSR on A0, LED on D9, rows
+A-G — see that folder's README). This board has no shared power rails, so
+every use of 3V3/GND is its own point-to-point jumper back to the chip:
 
-**Buzzer** (passive piezo, 2 leads):
-- `D8` → buzzer leg 1
-- `GND` → buzzer leg 2
+14. `D8` --jumper--> row H
+15. Buzzer leg 1 → row H
+16. Buzzer leg 2 → row I
+17. `GND` --jumper--> row I
+18. `D2` --jumper--> row J
+19. Vibration module `IN` → row J
+20. `3.3V-OUT` --jumper--> row K
+21. Vibration module `VCC` → row K
+22. `GND` --jumper--> row L
+23. Vibration module `GND` → row L
+
+**Buzzer** (passive piezo, 2 leads): `D8` → leg 1 (row H), `GND` → leg 2 (row I).
 
 **Vibration motor module** (3-pin breakout, driver already on the board):
-- `D2` → `IN`
-- `3V3` → `VCC` (module is commonly rated 3-5V; expect less punch at 3.3V
-  than at 5V — try raising `VIBRATION_INTENSITY` towards 255 first before
-  reaching for a 5V source)
-- `GND` → `GND`
+`D2` → `IN` (row J), `3V3` → `VCC` (row K, module is commonly rated 3-5V;
+expect less punch at 3.3V than at 5V — try raising `VIBRATION_INTENSITY`
+towards 255 first before reaching for a 5V source), `GND` → `GND` (row L).
 
 > `tone()` takes over a hardware timer on SAMD21 for its duration. If
 > playing the buzzer visibly disturbs the LED's brightness (flicker/dimming
 > while the tone plays), `D8` and `D9` share a timer on this board — move
 > the buzzer to a different pin and re-test.
+
+## Wiring (standard breadboard with +/- power rails)
+
+If you're not constrained to the no-rail mini board, a standard breadboard
+with power rails is simpler to build: the chip needs only **one** jumper to
+the +rail and **one** to the -rail total, and every component taps a rail
+directly instead of getting its own dedicated wire back to the chip.
+See `hardware/cad/plato_002_wiring_diagram_shared_rail.dxf` for the layout.
+
+1. `3.3V-OUT` --jumper--> breadboard **+rail**
+2. `GND` --jumper--> breadboard **-rail**
+3. FSR402 leg 1 → +rail; leg 2 → node C
+4. 1kΩ resistor leg 1 → node C; leg 2 → -rail
+5. `A0` --jumper--> node C (the divider tap point)
+6. `D9` → 330Ω resistor leg 1; leg 2 → LED anode; LED cathode → -rail
+7. `D8` → buzzer leg 1; buzzer leg 2 → -rail
+8. `D2` → vibration module `IN`
+9. Vibration module `VCC` → +rail
+10. Vibration module `GND` → -rail
 
 ## Tuning
 

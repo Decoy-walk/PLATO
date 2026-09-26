@@ -31,17 +31,29 @@ and update `kChannelCount` (and the mux wiring notes in the top-level
 
 ## Wiring diagrams
 
-`plato_002_wiring_diagram.dxf` is a 2D reference schematic (not to scale)
-for `firmware/Plato_002_fsr_led_buzzer_vibration/` — the XIAO SAMD21, FSR402
-voltage divider, LED, buzzer, and vibration motor module, laid out with
-shared 3V3/GND rails. Generated with [ezdxf](https://ezdxf.mozman.at/) so
-it's plain vector geometry on named layers (`WIRES`, `COMPONENTS`, `RAILS`,
-`LABELS`) — open it in Fusion 360 via **Insert > Insert DXF** into a sketch
-(or any other DXF-reading CAD/vector tool). It's a schematic aid for
-building the breadboard circuit, not a to-scale footprint layout — for the
-exact breadboard row-by-row wiring, see
-`firmware/Plato_001_fsr_led/README.md` and
-`firmware/Plato_002_fsr_led_buzzer_vibration/README.md`.
+Two DXF diagrams cover the same `firmware/Plato_002_fsr_led_buzzer_vibration/`
+circuit (XIAO SAMD21, FSR402 voltage divider, LED, buzzer, vibration motor
+module), for two different physical breadboards. Both are generated with
+[ezdxf](https://ezdxf.mozman.at/) as plain vector geometry on named layers —
+open either via **Insert > Insert DXF** into a Fusion 360 sketch (or any
+other DXF-reading tool). Neither is a to-scale footprint layout; for the
+exact row-by-row wiring instructions, see `firmware/Plato_001_fsr_led/README.md`
+and `firmware/Plato_002_fsr_led_buzzer_vibration/README.md`.
+
+- **`plato_002_wiring_diagram.dxf`** — matches the **no-rail mini
+  breadboard** the firmware READMEs document: 3V3/GND are net labels only,
+  and every use of them is its own point-to-point jumper back to the chip
+  (no shared rail exists on that board). Layers: `WIRES`, `COMPONENTS`,
+  `RAILS`, `LABELS`.
+- **`plato_002_wiring_diagram_shared_rail.dxf`** — redrawn for a
+  **standard breadboard with real +/- power rails**: the chip only needs
+  ONE jumper to the +rail and ONE to the -rail; every component taps the
+  rail directly instead of getting its own dedicated wire back to the
+  chip. Simpler to build if you're not constrained to the small no-rail
+  board. Layers: `WIRES`, `COMPONENTS`, `RAIL_PLUS`, `RAIL_MINUS`, `LABELS`.
+
+Pick whichever matches the physical breadboard actually on hand — they're
+electrically equivalent, just wired differently.
 
 ## Adding a new export
 
