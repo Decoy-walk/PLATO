@@ -1,5 +1,7 @@
 # PLATO — Embodied Memory via Material Interaction
 
+*[한국어](README.ko.md)*
+
 Research prototype for testing whether tactile-motor interaction with a
 physical folding-block device activates procedural memory as a
 supplementary channel, improving recall vs. text-only encoding. A sensing
