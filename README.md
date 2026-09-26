@@ -69,13 +69,14 @@ wired in parallel; `EN` pins are separate so the firmware can choose which
 
 - `firmware/PLATO_XIAO_SAMD21/` — the research build described below
   (SAMD21, 20-hinge sensing, wired serial, PC bridge).
-- `firmware/PLATO_EXHIBIT_SAMD21/` — a standalone exhibition-only build
-  (also SAMD21, but single flex sensor + LED, no per-hinge sensing, no
-  logging). See its own README for wiring and setup. Built for a specific
-  7-day exhibition deadline, not the formal study — keep it separate rather
-  than merging the two, since they serve different purposes and the
-  exhibit piece is a different physical object (single open/close DOF, not
-  20 independent hinges).
+- `firmware/Plato_001_fsr_led/` — the actual circuit exhibited at Maker
+  Faire Tokyo 2026 (Sep 4-8): one FSR402 + one LED on a bare XIAO SAMD21,
+  built for "E. Modular" (a FidgetSqueezer-style folding ball — see
+  `hardware/cad/` and `hardware/docs/MFT26_devlog.pdf`). See its own README for
+  the exact breadboard wiring. Kept separate from the research firmware
+  since it's a different physical object (a single squeeze-force joint,
+  not 20 independently-sensed hinges) built for a specific exhibition
+  deadline, not the formal study.
 
 ## Firmware (`firmware/PLATO_XIAO_SAMD21/`)
 
