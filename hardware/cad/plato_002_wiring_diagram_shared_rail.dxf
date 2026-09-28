@@ -489,7 +489,7 @@ $SKPOLY
   9
 $TDCREATE
  40
-2461310.420023148
+2461312.5812731483
   9
 $TDUCREATE
  40
@@ -497,7 +497,7 @@ $TDUCREATE
   9
 $TDUPDATE
  40
-2461310.420023148
+2461312.5812731483
   9
 $TDUUPDATE
  40
@@ -549,7 +549,7 @@ $SPLINESEGS
   9
 $HANDSEED
   5
-10F
+114
   9
 $SURFTAB1
  70
@@ -929,11 +929,11 @@ $PSTYLEMODE
   9
 $FINGERPRINTGUID
   2
-{82D21601-EE47-427D-BBEC-E7637774A419}
+{4F4F98F9-1A85-40F1-8358-BFBD13EB3C76}
   9
 $VERSIONGUID
   2
-{9E1A88C6-B50B-4154-B897-73979309F8AE}
+{336998D1-DD5E-4EBB-9D1B-2C1BDD2D33A0}
   9
 $EXTNAMES
 290
@@ -3205,7 +3205,7 @@ ACAD
   0
 APPID
   5
-10C
+111
 330
 3
 100
@@ -3219,7 +3219,7 @@ HATCHBACKGROUNDCOLOR
   0
 APPID
   5
-10D
+112
 330
 3
 100
@@ -7889,19 +7889,19 @@ WIRES
 100
 AcDbLine
  10
-45.0
+175.0
  20
-50.0
+80.0
  30
 0.0
  11
-45.0
+175.0
  21
-90.0
+60.0
  31
 0.0
   0
-LINE
+TEXT
   5
 F5
 330
@@ -7909,23 +7909,29 @@ F5
 100
 AcDbEntity
   8
-WIRES
+LABELS
 100
-AcDbLine
+AcDbText
  10
-45.0
+181.0
  20
-90.0
+68.0
  30
 0.0
+ 40
+2.5
+  1
+5V (USB VBUS pin)
  11
-175.0
+181.0
  21
-90.0
+68.0
  31
 0.0
+100
+AcDbText
   0
-LINE
+TEXT
   5
 F6
 330
@@ -7933,21 +7939,27 @@ F6
 100
 AcDbEntity
   8
-WIRES
+LABELS
 100
-AcDbLine
+AcDbText
  10
-175.0
+172.0
  20
-90.0
+61.0
  30
 0.0
+ 40
+2.5
+  1
++
  11
-175.0
+172.0
  21
-54.0
+61.0
  31
 0.0
+100
+AcDbText
   0
 CIRCLE
   5
@@ -7989,7 +8001,7 @@ AcDbText
  40
 2.5
   1
-Buzzer
+Buzzer (TMB12A05)
  11
 186.0
  21
@@ -8019,7 +8031,7 @@ AcDbText
  40
 2.5
   1
-(passive piezo)
+active, fixed ~2.4kHz
  11
 186.0
  21
@@ -8049,7 +8061,7 @@ AcDbText
  40
 2.5
   1
-600 Hz via tone()
+active-low via D8
  11
 186.0
  21
@@ -8059,9 +8071,87 @@ AcDbText
 100
 AcDbText
   0
-LINE
+TEXT
   5
 FB
+330
+17
+100
+AcDbEntity
+  8
+LABELS
+100
+AcDbText
+ 10
+172.0
+ 20
+39.0
+ 30
+0.0
+ 40
+2.5
+  1
+-
+ 11
+172.0
+ 21
+39.0
+ 31
+0.0
+100
+AcDbText
+  0
+LINE
+  5
+FC
+330
+17
+100
+AcDbEntity
+  8
+WIRES
+100
+AcDbLine
+ 10
+45.0
+ 20
+50.0
+ 30
+0.0
+ 11
+45.0
+ 21
+90.0
+ 31
+0.0
+  0
+LINE
+  5
+FD
+330
+17
+100
+AcDbEntity
+  8
+WIRES
+100
+AcDbLine
+ 10
+45.0
+ 20
+90.0
+ 30
+0.0
+ 11
+175.0
+ 21
+90.0
+ 31
+0.0
+  0
+LINE
+  5
+FE
 330
 17
 100
@@ -8073,19 +8163,19 @@ AcDbLine
  10
 175.0
  20
-36.0
+90.0
  30
 0.0
  11
 175.0
  21
--20.0
+36.0
  31
 0.0
   0
 LWPOLYLINE
   5
-FC
+FF
 330
 17
 100
@@ -8117,7 +8207,7 @@ AcDbPolyline
   0
 TEXT
   5
-FD
+100
 330
 17
 100
@@ -8147,7 +8237,7 @@ AcDbText
   0
 LINE
   5
-FE
+101
 330
 17
 100
@@ -8171,7 +8261,7 @@ AcDbLine
   0
 LINE
   5
-FF
+102
 330
 17
 100
@@ -8195,7 +8285,7 @@ AcDbLine
   0
 LINE
   5
-100
+103
 330
 17
 100
@@ -8219,7 +8309,7 @@ AcDbLine
   0
 LINE
   5
-101
+104
 330
 17
 100
@@ -8243,7 +8333,7 @@ AcDbLine
   0
 TEXT
   5
-102
+105
 330
 17
 100
@@ -8273,7 +8363,7 @@ AcDbText
   0
 LINE
   5
-103
+106
 330
 17
 100
@@ -8297,7 +8387,7 @@ AcDbLine
   0
 LINE
   5
-104
+107
 330
 17
 100
@@ -8321,7 +8411,7 @@ AcDbLine
   0
 TEXT
   5
-105
+108
 330
 17
 100
@@ -8351,7 +8441,7 @@ AcDbText
   0
 LINE
   5
-106
+109
 330
 17
 100
@@ -8375,7 +8465,7 @@ AcDbLine
   0
 LINE
   5
-107
+10A
 330
 17
 100
@@ -8399,7 +8489,7 @@ AcDbLine
   0
 TEXT
   5
-108
+10B
 330
 17
 100
@@ -8429,7 +8519,7 @@ AcDbText
   0
 TEXT
   5
-109
+10C
 330
 17
 100
@@ -8459,7 +8549,7 @@ AcDbText
   0
 TEXT
   5
-10A
+10D
 330
 17
 100
@@ -8477,7 +8567,7 @@ AcDbText
  40
 2.5
   1
-Standard breadboard with +/- power rails: only 2 chip-to-rail jumpers needed total
+Standard breadboard with +/- power rails: only 2 chip-to-rail jumpers needed for the
  11
 -30.0
  21
@@ -8489,7 +8579,7 @@ AcDbText
   0
 TEXT
   5
-10B
+10E
 330
 17
 100
@@ -8507,11 +8597,71 @@ AcDbText
  40
 2.5
   1
-(3V3 and GND), vs. a separate point-to-point jumper per use on a no-rail mini breadboard.
+3.3V-side components (3V3, GND), vs. a separate jumper per use on a no-rail mini breadboard.
  11
 -30.0
  21
 -37.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+10F
+330
+17
+100
+AcDbEntity
+  8
+LABELS
+100
+AcDbText
+ 10
+-30.0
+ 20
+-42.0
+ 30
+0.0
+ 40
+2.5
+  1
+The buzzer is a separate case: TMB12A05 is an active buzzer rated 4-8V, so it needs its own
+ 11
+-30.0
+ 21
+-42.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+110
+330
+17
+100
+AcDbEntity
+  8
+LABELS
+100
+AcDbText
+ 10
+-30.0
+ 20
+-47.0
+ 30
+0.0
+ 40
+2.5
+  1
+5V source (not the 3.3V +rail) and is switched active-low through D8 - see its label above.
+ 11
+-30.0
+ 21
+-47.0
  31
 0.0
 100
@@ -9607,7 +9757,7 @@ CREATED_BY_EZDXF
   3
 WRITTEN_BY_EZDXF
 350
-10E
+113
   0
 DICTIONARYVAR
   5
@@ -9619,7 +9769,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-26T10:04:50.071599+00:00
+1.4.4 @ 2026-09-28T13:57:02.897387+00:00
   0
 VISUALSTYLE
   5
@@ -10323,7 +10473,7 @@ X-Ray
   0
 DICTIONARYVAR
   5
-10E
+113
 330
 2D
 100
@@ -10331,7 +10481,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-26T10:04:50.081048+00:00
+1.4.4 @ 2026-09-28T13:57:02.904576+00:00
   0
 ENDSEC
   0

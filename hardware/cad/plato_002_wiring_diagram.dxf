@@ -489,7 +489,7 @@ $SKPOLY
   9
 $TDCREATE
  40
-2461310.4057291667
+2461312.5805439814
   9
 $TDUCREATE
  40
@@ -497,7 +497,7 @@ $TDUCREATE
   9
 $TDUPDATE
  40
-2461310.4057291667
+2461312.5805439814
   9
 $TDUUPDATE
  40
@@ -549,7 +549,7 @@ $SPLINESEGS
   9
 $HANDSEED
   5
-CA
+CD
   9
 $SURFTAB1
  70
@@ -929,11 +929,11 @@ $PSTYLEMODE
   9
 $FINGERPRINTGUID
   2
-{70A8D4AA-EB09-4256-B495-7B2163196C39}
+{DB384E3B-4DDA-4302-9B4D-9B48993697B4}
   9
 $VERSIONGUID
   2
-{F7B9A268-9479-44EB-A0E3-28D0873BA0C9}
+{D6568768-4F7E-45AD-9A1F-4FB1BA8BCA54}
   9
 $EXTNAMES
 290
@@ -1323,9 +1323,9 @@ ISM
   0
 CLASS
   1
-ACDBPLACEHOLDER
+LAYOUT
   2
-AcDbPlaceHolder
+AcDbLayout
   3
 ObjectDBX Classes
  90
@@ -1339,9 +1339,9 @@ ObjectDBX Classes
   0
 CLASS
   1
-LAYOUT
+ACDBPLACEHOLDER
   2
-AcDbLayout
+AcDbPlaceHolder
   3
 ObjectDBX Classes
  90
@@ -3181,7 +3181,7 @@ ACAD
   0
 APPID
   5
-C7
+CA
 330
 3
 100
@@ -3195,7 +3195,7 @@ HATCHBACKGROUNDCOLOR
   0
 APPID
   5
-C8
+CB
 330
 3
 100
@@ -6221,19 +6221,19 @@ WIRES
 100
 AcDbLine
  10
-45.0
+175.0
  20
-50.0
+80.0
  30
 0.0
  11
-45.0
+175.0
  21
-90.0
+60.0
  31
 0.0
   0
-LINE
+TEXT
   5
 B0
 330
@@ -6241,23 +6241,29 @@ B0
 100
 AcDbEntity
   8
-WIRES
+LABELS
 100
-AcDbLine
+AcDbText
  10
-45.0
+181.0
  20
-90.0
+68.0
  30
 0.0
+ 40
+2.5
+  1
+5V (USB VBUS pin)
  11
-175.0
+181.0
  21
-90.0
+68.0
  31
 0.0
+100
+AcDbText
   0
-LINE
+TEXT
   5
 B1
 330
@@ -6265,21 +6271,27 @@ B1
 100
 AcDbEntity
   8
-WIRES
+LABELS
 100
-AcDbLine
+AcDbText
  10
-175.0
+172.0
  20
-90.0
+61.0
  30
 0.0
+ 40
+2.5
+  1
++
  11
-175.0
+172.0
  21
-54.0
+61.0
  31
 0.0
+100
+AcDbText
   0
 CIRCLE
   5
@@ -6321,7 +6333,7 @@ AcDbText
  40
 2.5
   1
-Buzzer
+Buzzer (TMB12A05)
  11
 186.0
  21
@@ -6351,7 +6363,7 @@ AcDbText
  40
 2.5
   1
-(passive piezo)
+active, fixed ~2.4kHz
  11
 186.0
  21
@@ -6381,7 +6393,7 @@ AcDbText
  40
 2.5
   1
-600 Hz via tone()
+active-low via D8
  11
 186.0
  21
@@ -6391,9 +6403,87 @@ AcDbText
 100
 AcDbText
   0
-LINE
+TEXT
   5
 B6
+330
+17
+100
+AcDbEntity
+  8
+LABELS
+100
+AcDbText
+ 10
+172.0
+ 20
+39.0
+ 30
+0.0
+ 40
+2.5
+  1
+-
+ 11
+172.0
+ 21
+39.0
+ 31
+0.0
+100
+AcDbText
+  0
+LINE
+  5
+B7
+330
+17
+100
+AcDbEntity
+  8
+WIRES
+100
+AcDbLine
+ 10
+45.0
+ 20
+50.0
+ 30
+0.0
+ 11
+45.0
+ 21
+90.0
+ 31
+0.0
+  0
+LINE
+  5
+B8
+330
+17
+100
+AcDbEntity
+  8
+WIRES
+100
+AcDbLine
+ 10
+45.0
+ 20
+90.0
+ 30
+0.0
+ 11
+175.0
+ 21
+90.0
+ 31
+0.0
+  0
+LINE
+  5
+B9
 330
 17
 100
@@ -6405,19 +6495,19 @@ AcDbLine
  10
 175.0
  20
-36.0
+90.0
  30
 0.0
  11
 175.0
  21
--20.0
+36.0
  31
 0.0
   0
 LWPOLYLINE
   5
-B7
+BA
 330
 17
 100
@@ -6449,7 +6539,7 @@ AcDbPolyline
   0
 TEXT
   5
-B8
+BB
 330
 17
 100
@@ -6479,7 +6569,7 @@ AcDbText
   0
 LINE
   5
-B9
+BC
 330
 17
 100
@@ -6503,7 +6593,7 @@ AcDbLine
   0
 LINE
   5
-BA
+BD
 330
 17
 100
@@ -6527,7 +6617,7 @@ AcDbLine
   0
 LINE
   5
-BB
+BE
 330
 17
 100
@@ -6551,7 +6641,7 @@ AcDbLine
   0
 LINE
   5
-BC
+BF
 330
 17
 100
@@ -6575,7 +6665,7 @@ AcDbLine
   0
 TEXT
   5
-BD
+C0
 330
 17
 100
@@ -6605,7 +6695,7 @@ AcDbText
   0
 LINE
   5
-BE
+C1
 330
 17
 100
@@ -6629,7 +6719,7 @@ AcDbLine
   0
 LINE
   5
-BF
+C2
 330
 17
 100
@@ -6653,7 +6743,7 @@ AcDbLine
   0
 TEXT
   5
-C0
+C3
 330
 17
 100
@@ -6683,7 +6773,7 @@ AcDbText
   0
 LINE
   5
-C1
+C4
 330
 17
 100
@@ -6707,7 +6797,7 @@ AcDbLine
   0
 LINE
   5
-C2
+C5
 330
 17
 100
@@ -6731,7 +6821,7 @@ AcDbLine
   0
 TEXT
   5
-C3
+C6
 330
 17
 100
@@ -6761,7 +6851,7 @@ AcDbText
   0
 TEXT
   5
-C4
+C7
 330
 17
 100
@@ -6791,7 +6881,7 @@ AcDbText
   0
 TEXT
   5
-C5
+C8
 330
 17
 100
@@ -6821,7 +6911,7 @@ AcDbText
   0
 TEXT
   5
-C6
+C9
 330
 17
 100
@@ -7939,7 +8029,7 @@ CREATED_BY_EZDXF
   3
 WRITTEN_BY_EZDXF
 350
-C9
+CC
   0
 DICTIONARYVAR
   5
@@ -7951,7 +8041,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-26T09:44:15.894917+00:00
+1.4.4 @ 2026-09-28T13:55:59.055486+00:00
   0
 VISUALSTYLE
   5
@@ -8655,7 +8745,7 @@ X-Ray
   0
 DICTIONARYVAR
   5
-C9
+CC
 330
 2D
 100
@@ -8663,7 +8753,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-26T09:44:15.900986+00:00
+1.4.4 @ 2026-09-28T13:55:59.065100+00:00
   0
 ENDSEC
   0
