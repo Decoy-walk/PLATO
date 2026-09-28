@@ -1,15 +1,20 @@
 // Plato_002_fsr_led_buzzer_vibration.ino
 //
 // Extends Plato_001_fsr_led (the circuit exhibited at Maker Faire Tokyo
-// 2026) with two more outputs, both triggered together when the FSR is
+// 2026) with two more outputs, both active together once the FSR is
 // pressed past a threshold: a buzzer, and a vibration-motor breakout
 // module (driver built into the module, so its IN pin can be driven
 // directly from a GPIO/PWM pin) shaking hard enough to rattle the printed
-// plastic structure against itself.
+// plastic structure against itself - a stand-in "feel the resonance
+// plate vibrating" haptic channel.
 //
 // The FSR->LED brightness mapping is unchanged from Plato_001 and stays
-// continuously proportional to force; the buzzer and vibration motor are
-// a separate on/off layer on top of that.
+// continuously proportional to force. The buzzer is a discrete on/off
+// chirp layer once pressed (see below); the vibration motor is a graded
+// haptic layer - its intensity scales continuously with how hard you
+// press (harder squeeze -> stronger felt vibration), not just on/off,
+// so it reads as feeling the plate's own vibration rather than a single
+// fixed buzz.
 //
 // Board: Tools > Board > Seeed SAMD Boards > Seeeduino XIAO
 //
@@ -60,9 +65,24 @@
 //   Vibration motor module (3-pin breakout, driver already on the board):
 //     D2 -> IN
 //     3V3 -> VCC   (module is commonly rated 3-5V; expect a bit less punch
-//                    at 3.3V than at 5V - bump VIBRATION_INTENSITY towards
-//                    255 first if it feels weak before reaching for 5V)
+//                    at 3.3V than at 5V - bump towards 255 first if it
+//                    feels weak before reaching for 5V)
 //     GND -> GND
+//
+//   Haptic feel: this is a small ERM (eccentric rotating mass) motor, not
+//   an LRA - its felt vibration frequency isn't independently settable,
+//   it's a side effect of how fast the eccentric mass spins, which tracks
+//   the applied voltage/PWM duty. So unlike the LED (which stays legible
+//   across its whole 0-255 range), driving this motor anywhere below
+//   roughly its rated voltage just makes it spin slower/weaker - it may
+//   not even overcome its own static friction and spin up at all, giving
+//   no felt vibration rather than a gentler one. To let a squeeze be felt
+//   as a genuine "resonance plate is buzzing" sensation (and get it
+//   reasonably close to its rated ~150-200Hz felt frequency, typical for
+//   small coin ERM motors at rated voltage - re-measure if you know this
+//   module's exact part number), intensity is mapped from
+//   MIN_EFFECTIVE_VIBRATION..255 across the pressed force range instead of
+//   0..255, so it never drops into that ineffective low band once pressed.
 
 const int fsrPin = A0;
 const int ledPin = 9;
@@ -81,7 +101,11 @@ const int PRESS_ON_BRIGHTNESS = 40;  // brightness (0-255) above which the buzze
 const int PRESS_OFF_BRIGHTNESS = 20; // below which they turn back off
 // (the gap between ON/OFF is hysteresis, so sensor noise right at the
 // threshold can't make them chatter on and off rapidly)
-const int VIBRATION_INTENSITY = 220; // 0-255 PWM to the module's IN pin
+// Small coin ERM motors typically need roughly 60-70% of their rated
+// voltage just to start spinning at all, so intensity is scaled within
+// this upper band instead of the full 0-255 range (see wiring note above).
+const int MIN_EFFECTIVE_VIBRATION = 170; // PWM floor once pressed - below this it may not spin
+const int MAX_VIBRATION = 255;           // PWM at full press force
 
 const unsigned long SENSE_INTERVAL_MS = 50; // FSR read / LED update rate
 // A too-short ON pulse cuts the buzzer off before its internal driver
@@ -133,7 +157,14 @@ void loop() {
       pressed = false;
     }
 
-    analogWrite(vibrationPin, pressed ? VIBRATION_INTENSITY : 0);
+    if (pressed) {
+      int vibrationIntensity = map(brightness, PRESS_ON_BRIGHTNESS, 255,
+                                    MIN_EFFECTIVE_VIBRATION, MAX_VIBRATION);
+      vibrationIntensity = constrain(vibrationIntensity, MIN_EFFECTIVE_VIBRATION, MAX_VIBRATION);
+      analogWrite(vibrationPin, vibrationIntensity);
+    } else {
+      analogWrite(vibrationPin, 0);
+    }
 
     Serial.print("raw: ");
     Serial.print(raw);

@@ -1,17 +1,20 @@
 # Plato_002_fsr_led_buzzer_vibration (Seeeduino XIAO, SAMD21)
 
 Extends `Plato_001_fsr_led` (the circuit actually exhibited at Maker Faire
-Tokyo 2026) with two more outputs, both triggered together when the FSR is
-squeezed past a threshold:
+Tokyo 2026) with two more outputs, both active once the FSR is squeezed
+past a threshold:
 
-- A buzzer (TMB12A05).
+- A buzzer (TMB12A05) — a discrete on/off chirp layer (see below).
 - A vibration-motor breakout module (driver built into the module) shaking
-  hard enough to rattle the printed plastic structure against itself.
+  hard enough to rattle the printed plastic structure against itself, and
+  standing in for "feel the resonance plate vibrating" — its intensity
+  scales continuously with how hard you press, not just on/off.
 
 The FSR→LED brightness response is unchanged and stays continuously
-proportional to force; the buzzer/vibration are a separate on/off layer on
-top, since "buzz" and "rattle loudly" are discrete effects, not something
-meaningfully swept by force the way LED brightness is.
+proportional to force. The buzzer's chirp is a discrete on/off layer on
+top, since "buzz" is a discrete effect, not something meaningfully swept
+by force the way LED brightness is. The vibration motor, on the other
+hand, is graded like the LED — see "Haptic feel" below.
 
 ## The buzzer is an active buzzer, not a passive piezo
 
@@ -109,6 +112,39 @@ directly and runs fine off 3.3V (no `5V` pin/low-side-switch wiring needed
 at all). That's a separate hardware change, not something this sketch's
 software can do with the TMB12A05 installed.
 
+## Haptic feel: force-proportional vibration, not on/off
+
+The vibration motor module wraps a small **ERM (eccentric rotating mass)**
+motor, not an LRA (linear resonant actuator). That distinction matters for
+how it's driven:
+
+- An LRA is driven at (or swept across) a specific resonant frequency, and
+  its *frequency* is the tunable knob.
+- An ERM has no such tunable frequency. What you feel as its "buzz
+  frequency" is just how fast the offset weight is spinning, which tracks
+  the applied voltage/PWM duty directly — there's no separate frequency
+  control, only a speed/intensity control.
+
+Small coin ERM motors also typically need roughly **60-70% of their rated
+voltage just to start spinning at all** (they have to overcome their own
+static friction/cogging) — below that they don't spin, so they give no
+felt vibration rather than a gentler one. That makes a naive full 0-255
+PWM sweep (like the LED's brightness mapping) mostly waste: most of that
+range would either not move the motor or move it so weakly it can't be
+felt.
+
+So instead, once pressed, intensity is mapped from `MIN_EFFECTIVE_VIBRATION`
+(170, ≈67% duty) up to `MAX_VIBRATION` (255) across the pressed force range
+— never dropping into the ineffective low band — so a light press still
+gives a felt, near-full-speed buzz and a hard press gives the strongest
+one, rather than a binary "vibrating or not." This also keeps it running
+close to its rated speed most of the time, which is roughly where small
+coin ERM motors' felt vibration frequency sits — commonly cited around
+**~150-200Hz** for this class of part at rated voltage, though that number
+depends on the exact motor and isn't something this build measured
+directly (re-check against a datasheet if you know this module's part
+number).
+
 ## What this doesn't do yet: Chladni/Cymatics patterns
 
 The original three-part plan also called for mapping the sound to visible
@@ -146,8 +182,9 @@ source:
 
 **Vibration motor module** (3-pin breakout, driver already on the board):
 `D2` → `IN` (row J), `3V3` → `VCC` (row K, module is commonly rated 3-5V;
-expect less punch at 3.3V than at 5V — try raising `VIBRATION_INTENSITY`
-towards 255 first before reaching for a 5V source), `GND` → `GND` (row L).
+expect less punch at 3.3V than at 5V — try raising `MAX_VIBRATION` towards
+255 (already its default) first before reaching for a 5V source), `GND` →
+`GND` (row L).
 
 ## Wiring (standard breadboard with +/- power rails)
 
@@ -175,8 +212,11 @@ for the layout, which includes the buzzer's dedicated 5V feed.
 - `PRESS_ON_BRIGHTNESS` / `PRESS_OFF_BRIGHTNESS` (40 / 20): hysteresis
   thresholds on the same 0-255 brightness scale as the LED — widen the gap
   if the buzzer/vibration chatter on and off near the threshold.
-- `VIBRATION_INTENSITY` (220): PWM duty to the vibration module's `IN` pin;
-  raise towards 255 if the rattle effect feels weak.
+- `MIN_EFFECTIVE_VIBRATION` / `MAX_VIBRATION` (170 / 255): the PWM range the
+  vibration module's `IN` pin is scaled across while pressed — see "Haptic
+  feel" above. Raise `MIN_EFFECTIVE_VIBRATION` if a light press still
+  doesn't spin the motor at all; lower it (cautiously) if you want a
+  softer floor and your motor tolerates it.
 - `BUZZ_ON_MS` / `BUZZ_OFF_MS` (90 / 35): the buzzer's chirp pattern while
   pressed — see "Making the buzzer sound less harsh" above. Raise `BUZZ_ON_MS`
   and/or lower `BUZZ_OFF_MS` for louder/more continuous; lower `BUZZ_ON_MS`

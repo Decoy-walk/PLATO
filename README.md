@@ -81,10 +81,12 @@ wired in parallel; `EN` pins are separate so the firmware can choose which
   deadline, not the formal study.
 - `firmware/Plato_002_fsr_led_buzzer_vibration/` — post-exhibition
   extension of `Plato_001_fsr_led`: adds a TMB12A05 active buzzer (5V,
-  fixed ~2.4kHz) and a vibration-motor module, both triggered together
-  above a squeeze-force threshold. `Plato_001_fsr_led` is left untouched as
-  the historical record of what actually showed at Maker Faire; new
-  sensory layers land in their own numbered sketch instead.
+  fixed ~2.4kHz, pulsed into chirps) above a squeeze-force threshold, and
+  an ERM vibration-motor module whose intensity scales continuously with
+  press force (a graded haptic "feel the resonance plate vibrating" layer,
+  not just on/off). `Plato_001_fsr_led` is left untouched as the
+  historical record of what actually showed at Maker Faire; new sensory
+  layers land in their own numbered sketch instead.
 - `firmware/Plato_003_fsr_led_buzzer/` — same as `Plato_002` minus the
   vibration motor module, for when only sound feedback is wanted.
 
