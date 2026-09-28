@@ -71,11 +71,19 @@ firmware has no control over that pitch or waveform at all (`tone()`'s
 frequency argument does nothing here; see above). What the firmware *can*
 control is the on/off **rhythm**: instead of holding the buzzer on
 continuously for the whole press (one flat, harsh drone), it now pulses it
-into short chirps while pressed — `BUZZ_ON_MS` (25ms) on, `BUZZ_OFF_MS`
-(70ms) off, repeating — which reads as a soft chirping/beeping pattern
-rather than a continuous industrial buzz. Each chirp's OFF gap still uses
-the same `INPUT` high-impedance trick (not `HIGH`), so it's reliably
-silent between chirps too.
+into short chirps while pressed — `BUZZ_ON_MS` (90ms) on, `BUZZ_OFF_MS`
+(35ms) off, repeating — which reads as a beeping pattern rather than a
+continuous industrial buzz. Each chirp's OFF gap still uses the same
+`INPUT` high-impedance trick (not `HIGH`), so it's reliably silent between
+chirps too.
+
+An earlier, shorter version of this pattern (25ms on / 70ms off) came out
+noticeably **quieter** than the old continuous tone, for two compounding
+reasons: a low `ON/(ON+OFF)` duty cycle (26%) lowers the time-averaged
+loudness on its own, and cutting the pulse at 25ms may also stop it before
+the buzzer's internal driver finishes ramping up to full amplitude, so
+each chirp never even reached full volume. 90/35 (72% duty) fixes both —
+still audibly pulsing, not a flat drone, but full-volume and much louder.
 
 This needed the main loop restructured from a single blocking `delay(50)`
 per iteration to `millis()`-timed scheduling, so the buzzer can pulse
@@ -137,8 +145,12 @@ instead of getting its own dedicated wire back to the chip.
   if the buzzer chatters on and off near the threshold.
 - `condMin` / `condMax`: FSR402 conductance range, re-measure per physical
   build (see `Plato_001_fsr_led/README.md`'s calibration section).
-- `BUZZ_ON_MS` / `BUZZ_OFF_MS` (25 / 70): the buzzer's chirp pattern while
-  pressed — see "Making the buzzer sound less harsh" above.
+- `BUZZ_ON_MS` / `BUZZ_OFF_MS` (90 / 35): the buzzer's chirp pattern while
+  pressed — see "Making the buzzer sound less harsh" above. Raise `BUZZ_ON_MS`
+  and/or lower `BUZZ_OFF_MS` for louder/more continuous; lower `BUZZ_ON_MS`
+  and/or raise `BUZZ_OFF_MS` for softer/more clearly pulsed (but don't go
+  below ~40-50ms ON, or the driver may not reach full volume before cutting
+  off again).
 
 ## Setup / build / flash
 

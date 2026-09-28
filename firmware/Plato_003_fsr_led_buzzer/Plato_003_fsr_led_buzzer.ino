@@ -72,8 +72,14 @@ const int PRESS_OFF_BRIGHTNESS = 20; // below which it turns back off
 // threshold can't make it chatter on and off rapidly)
 
 const unsigned long SENSE_INTERVAL_MS = 50; // FSR read / LED update rate
-const unsigned long BUZZ_ON_MS = 25;        // each chirp's ON duration
-const unsigned long BUZZ_OFF_MS = 70;       // gap between chirps while pressed
+// A too-short ON pulse cuts the buzzer off before its internal driver
+// finishes ramping up to full volume, and a low ON/(ON+OFF) duty cycle
+// lowers the averaged loudness on top of that - both made the first chirp
+// version (25/70) noticeably quieter than the old continuous tone. 90/35
+// keeps an audible pulsing texture (not a flat drone) while giving the
+// driver enough ON time to reach full volume and raising the duty back up.
+const unsigned long BUZZ_ON_MS = 90;  // each chirp's ON duration
+const unsigned long BUZZ_OFF_MS = 35; // gap between chirps while pressed
 
 bool pressed = false;
 bool buzzChirpOn = false;
