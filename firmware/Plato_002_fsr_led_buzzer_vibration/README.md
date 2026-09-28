@@ -41,6 +41,12 @@ buzzer - lead --------> D8
 this wiring only works while USB-powered, not on battery/regulated-3.3V-only
 power.)
 
+> **Lead identification: the SHORT lead is `+`, the LONG lead is `-`** —
+> backwards from the LED long-leg-is-anode convention, easy to get wrong by
+> habit. A printed `+` on the case can also fall off or be inconsistently
+> placed, so trust lead length over any marking. Reversed polarity can
+> prevent the buzzer from working at all.
+
 With this wiring the control logic is **active-low**: `D8` LOW sinks
 current and completes the circuit (buzzer ON); `D8` HIGH leaves only 3.3V
 across the buzzer, below its minimum, so it goes silent (OFF). The firmware
@@ -74,8 +80,8 @@ every use of a supply voltage is its own point-to-point jumper back to its
 source:
 
 14. `D8` --jumper--> row H
-15. Buzzer `-` lead → row H
-16. Buzzer `+` lead → row I
+15. Buzzer `-` lead (**long** lead) → row H
+16. Buzzer `+` lead (**short** lead) → row I
 17. XIAO `5V` pin --jumper--> row I
 18. `D2` --jumper--> row J
 19. Vibration module `IN` → row J
@@ -84,8 +90,8 @@ source:
 22. `GND` --jumper--> row L
 23. Vibration module `GND` → row L
 
-**Buzzer** (TMB12A05, active, 2 leads): `+` lead → row I (→ XIAO `5V` pin),
-`-` lead → row H (→ `D8`, active-low switching — see above).
+**Buzzer** (TMB12A05, active, 2 leads): `+` (short) lead → row I (→ XIAO
+`5V` pin), `-` (long) lead → row H (→ `D8`, active-low switching — see above).
 
 **Vibration motor module** (3-pin breakout, driver already on the board):
 `D2` → `IN` (row J), `3V3` → `VCC` (row K, module is commonly rated 3-5V;
@@ -108,7 +114,7 @@ for the layout, which includes the buzzer's dedicated 5V feed.
 4. 1kΩ resistor leg 1 → node C; leg 2 → -rail
 5. `A0` --jumper--> node C (the divider tap point)
 6. `D9` → 330Ω resistor leg 1; leg 2 → LED anode; LED cathode → -rail
-7. XIAO `5V` pin → buzzer `+` lead; buzzer `-` lead → `D8`
+7. XIAO `5V` pin → buzzer `+` lead (**short**); buzzer `-` lead (**long**) → `D8`
 8. `D2` → vibration module `IN`
 9. Vibration module `VCC` → +rail
 10. Vibration module `GND` → -rail

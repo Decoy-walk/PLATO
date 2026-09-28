@@ -23,9 +23,12 @@
 //   all - this is the most likely reason the buzzer didn't work). Since
 //   the MCU's GPIO HIGH is only 3.3V, it can't source the buzzer's
 //   required 5V either, so it's wired as a low-side switch instead:
-//     XIAO "5V" pin -> buzzer + lead   (needs the board powered over USB,
+//     XIAO "5V" pin -> buzzer + lead   (SHORT lead - opposite of the LED
+//                                        long-leg-is-anode convention;
+//                                        needs the board powered over USB,
 //                                        which is where that pin gets 5V)
-//     buzzer - lead -> D8              (GPIO sinks current to switch it on)
+//     buzzer - lead -> D8              (LONG lead; GPIO sinks current to
+//                                        switch it on)
 //   With this wiring the control logic is ACTIVE-LOW: D8 LOW completes the
 //   circuit (buzzer ON), D8 HIGH leaves only 3.3V across the buzzer, which
 //   is below its minimum, so it goes silent (OFF).
