@@ -38,6 +38,25 @@
 //   D8 to INPUT removes the current path entirely (no meaningful voltage
 //   across the buzzer at all), which reliably silences it without needing
 //   an extra transistor as a true low-side switch.
+//
+//   Since this buzzer's ~2.4kHz tone/timbre is fixed in hardware and can't
+//   be changed by software, "sounds harsh" is addressed by shaping the
+//   on/off *rhythm* instead: rather than one continuous drone for the
+//   whole press, the buzzer is pulsed into short chirps (BUZZ_ON_MS on,
+//   BUZZ_OFF_MS off, repeating) while pressed, which reads as a soft
+//   chirping/beeping pattern instead of a harsh flat tone. Each chirp's
+//   OFF gap still goes through the same INPUT high-impedance trick above
+//   (not HIGH), so it stays reliably silent between chirps too - PWMing
+//   the sink pin instead (partial duty) was considered and rejected,
+//   since the leftover voltage during the HIGH portion of a PWM cycle can
+//   re-trigger the same "won't turn off" sustain behavior described above.
+//   Tune BUZZ_ON_MS / BUZZ_OFF_MS to taste (shorter ON / longer OFF reads
+//   as a lighter "tick"; longer ON / shorter OFF approaches a continuous
+//   drone again). For a genuinely different pitch (e.g. closer to 600Hz)
+//   or a smoother waveform, this active buzzer would need to be swapped
+//   for a passive piezo (no built-in driver) driven with tone() - see this
+//   folder's README.
+//
 //   Vibration motor module (3-pin breakout, driver already on the board):
 //     D2 -> IN
 //     3V3 -> VCC   (module is commonly rated 3-5V; expect a bit less punch
@@ -64,7 +83,14 @@ const int PRESS_OFF_BRIGHTNESS = 20; // below which they turn back off
 // threshold can't make them chatter on and off rapidly)
 const int VIBRATION_INTENSITY = 220; // 0-255 PWM to the module's IN pin
 
+const unsigned long SENSE_INTERVAL_MS = 50; // FSR read / LED update rate
+const unsigned long BUZZ_ON_MS = 25;        // each chirp's ON duration
+const unsigned long BUZZ_OFF_MS = 70;       // gap between chirps while pressed
+
 bool pressed = false;
+bool buzzChirpOn = false;
+unsigned long lastSenseMs = 0;
+unsigned long lastBuzzToggleMs = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -75,44 +101,57 @@ void setup() {
 }
 
 void loop() {
-  int raw = analogRead(fsrPin);
-  float vOut = raw * (VCC / 1023.0);
+  unsigned long now = millis();
 
-  float conductance;
-  if (vOut <= 0.01) {
-    conductance = 0;
-  } else {
-    float rFsr = R_FIXED * (VCC - vOut) / vOut;
-    conductance = 1.0 / rFsr;
-  }
+  if (now - lastSenseMs >= SENSE_INTERVAL_MS) {
+    lastSenseMs = now;
 
-  int brightness = (int)((conductance - condMin) / (condMax - condMin) * 255);
-  brightness = constrain(brightness, 0, 255);
-  analogWrite(ledPin, brightness);
+    int raw = analogRead(fsrPin);
+    float vOut = raw * (VCC / 1023.0);
 
-  if (!pressed && brightness > PRESS_ON_BRIGHTNESS) {
-    pressed = true;
-  } else if (pressed && brightness < PRESS_OFF_BRIGHTNESS) {
-    pressed = false;
+    float conductance;
+    if (vOut <= 0.01) {
+      conductance = 0;
+    } else {
+      float rFsr = R_FIXED * (VCC - vOut) / vOut;
+      conductance = 1.0 / rFsr;
+    }
+
+    int brightness = (int)((conductance - condMin) / (condMax - condMin) * 255);
+    brightness = constrain(brightness, 0, 255);
+    analogWrite(ledPin, brightness);
+
+    if (!pressed && brightness > PRESS_ON_BRIGHTNESS) {
+      pressed = true;
+    } else if (pressed && brightness < PRESS_OFF_BRIGHTNESS) {
+      pressed = false;
+    }
+
+    analogWrite(vibrationPin, pressed ? VIBRATION_INTENSITY : 0);
+
+    Serial.print("raw: ");
+    Serial.print(raw);
+    Serial.print("\tconductance: ");
+    Serial.print(conductance, 6);
+    Serial.print("\tbrightness: ");
+    Serial.print(brightness);
+    Serial.print("\tpressed: ");
+    Serial.println(pressed);
   }
 
   if (pressed) {
-    pinMode(buzzerPin, OUTPUT);
-    digitalWrite(buzzerPin, LOW); // sinks current, completing the 5V-fed buzzer's circuit
-    analogWrite(vibrationPin, VIBRATION_INTENSITY);
-  } else {
+    if (buzzChirpOn && now - lastBuzzToggleMs >= BUZZ_ON_MS) {
+      buzzChirpOn = false;
+      lastBuzzToggleMs = now;
+      pinMode(buzzerPin, INPUT); // silent gap between chirps
+    } else if (!buzzChirpOn && now - lastBuzzToggleMs >= BUZZ_OFF_MS) {
+      buzzChirpOn = true;
+      lastBuzzToggleMs = now;
+      pinMode(buzzerPin, OUTPUT);
+      digitalWrite(buzzerPin, LOW); // sinks current, completing the 5V-fed buzzer's circuit
+    }
+  } else if (buzzChirpOn) {
+    buzzChirpOn = false;
     pinMode(buzzerPin, INPUT); // high-impedance: no current path at all, so it's reliably silent
-    analogWrite(vibrationPin, 0);
   }
-
-  Serial.print("raw: ");
-  Serial.print(raw);
-  Serial.print("\tconductance: ");
-  Serial.print(conductance, 6);
-  Serial.print("\tbrightness: ");
-  Serial.print(brightness);
-  Serial.print("\tpressed: ");
-  Serial.println(pressed);
-
-  delay(50);
 }
