@@ -148,9 +148,25 @@ instead of getting its own dedicated wire back to the chip.
 - `BUZZ_ON_MS` / `BUZZ_OFF_MS` (90 / 35): the buzzer's chirp pattern while
   pressed — see "Making the buzzer sound less harsh" above. Raise `BUZZ_ON_MS`
   and/or lower `BUZZ_OFF_MS` for louder/more continuous; lower `BUZZ_ON_MS`
-  and/or raise `BUZZ_OFF_MS` for softer/more clearly pulsed (but don't go
-  below ~40-50ms ON, or the driver may not reach full volume before cutting
-  off again).
+  and/or raise `BUZZ_OFF_MS` for softer/more clearly pulsed. Practical
+  bench-tested bounds (not datasheet specs — TMB12A05 doesn't publish
+  ramp-up/decay times):
+  - `BUZZ_ON_MS` below ~40-50ms: driver may cut off before reaching full
+    volume (this is what made the original 25ms version sound quiet/thin).
+    Above ~150-200ms: no technical ceiling, but it starts reading as one
+    continuous tone rather than distinct beeps.
+  - `BUZZ_OFF_MS` at 0: reverts to the original harsh continuous drone
+    (no audible gap at all). Below ~15-20ms: the buzzer's diaphragm may not
+    fully settle before the next pulse starts, so the gap barely registers.
+    Above ~300-500ms: reads as separate, clearly spaced clicks, and a very
+    short press can end before a single chirp completes.
+
+  | Goal | ON / OFF (ms) | Duty |
+  |------|---------------|------|
+  | Softest (ok if quiet) | 40 / 150 | ~21% |
+  | Current default (balanced) | 90 / 35 | ~72% |
+  | Loud, distinct beeps | 120 / 60 | ~67% |
+  | Near-continuous (loud, harsh) | 200 / 10 | ~95% |
 
 ## Setup / build / flash
 
