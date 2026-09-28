@@ -47,16 +47,24 @@ power.)
 > placed, so trust lead length over any marking. Reversed polarity can
 > prevent the buzzer from working at all.
 
-With this wiring the control logic is **active-low**: `D8` LOW sinks
-current and completes the circuit (buzzer ON); `D8` HIGH leaves only 3.3V
-across the buzzer, below its minimum, so it goes silent (OFF). The firmware
-already does this (`digitalWrite(buzzerPin, LOW/HIGH)`, not `tone()`/`noTone()`).
+For ON, `D8` is driven `OUTPUT` `LOW`, sinking current and completing the
+circuit. For OFF, **`D8` is switched to `INPUT` (high-impedance)**, not
+driven `HIGH` — driving it `HIGH` only leaves ~1.7V across the buzzer
+(5V - 3.3V), and this particular buzzer's driver IC can *sustain*
+oscillation at that leftover voltage even though it needs the full 4V+ to
+*start* it, so a once-triggered buzzer never actually stopped when tried
+with `HIGH` instead. Switching to `INPUT` removes the current path
+entirely, which reliably silences it with no extra hardware. The firmware
+does this (`pinMode(buzzerPin, OUTPUT/INPUT)` + `digitalWrite(buzzerPin, LOW)`
+for ON, not `tone()`/`noTone()` and not a plain `HIGH` for OFF).
 
 The buzzer draws ~30mA when on. Driving that directly through a GPIO pin as
-a sink is common practice for a small load like this, but if you'd rather
-not run current straight through the MCU pin, add a small NPN transistor
-(e.g. 2N3904) as the low-side switch instead: `D8` → base (through a ~1kΩ
-resistor), buzzer `-` lead → collector, emitter → GND.
+a sink is common practice for a small load like this. If you have a small
+NPN transistor (e.g. 2N3904) on hand, using it as a true low-side switch
+(`D8` → base through a ~1kΩ resistor, buzzer `-` lead → collector, emitter
+→ GND, control logic flipped back to `HIGH`=on) is an equally valid
+alternative to the `INPUT`-for-off trick above and keeps current off the
+MCU pin entirely — but isn't required to fix the "won't turn off" symptom.
 
 ## What this doesn't do yet: Chladni/Cymatics patterns
 
@@ -91,7 +99,7 @@ source:
 23. Vibration module `GND` → row L
 
 **Buzzer** (TMB12A05, active, 2 leads): `+` (short) lead → row I (→ XIAO
-`5V` pin), `-` (long) lead → row H (→ `D8`, active-low switching — see above).
+`5V` pin), `-` (long) lead → row H (→ `D8`, `OUTPUT LOW`/`INPUT` switching — see above).
 
 **Vibration motor module** (3-pin breakout, driver already on the board):
 `D2` → `IN` (row J), `3V3` → `VCC` (row K, module is commonly rated 3-5V;

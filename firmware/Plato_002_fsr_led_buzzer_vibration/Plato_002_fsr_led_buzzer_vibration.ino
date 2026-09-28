@@ -29,9 +29,15 @@
 //                                        which is where that pin gets 5V)
 //     buzzer - lead -> D8              (LONG lead; GPIO sinks current to
 //                                        switch it on)
-//   With this wiring the control logic is ACTIVE-LOW: D8 LOW completes the
-//   circuit (buzzer ON), D8 HIGH leaves only 3.3V across the buzzer, which
-//   is below its minimum, so it goes silent (OFF).
+//   Control logic: D8 driven LOW (OUTPUT) sinks current, completing the
+//   circuit (buzzer ON). For OFF, D8 is switched to INPUT (high-impedance)
+//   rather than driven HIGH - driving it HIGH only leaves ~1.7V across the
+//   buzzer (5V - 3.3V), and some active-buzzer driver ICs can *sustain*
+//   oscillation at that leftover voltage even though they need the full 4V+
+//   to *start* it, so a once-triggered buzzer never actually stops. Setting
+//   D8 to INPUT removes the current path entirely (no meaningful voltage
+//   across the buzzer at all), which reliably silences it without needing
+//   an extra transistor as a true low-side switch.
 //   Vibration motor module (3-pin breakout, driver already on the board):
 //     D2 -> IN
 //     3V3 -> VCC   (module is commonly rated 3-5V; expect a bit less punch
@@ -64,8 +70,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(ledPin, OUTPUT);
   pinMode(fsrPin, INPUT);
-  pinMode(buzzerPin, OUTPUT);
-  digitalWrite(buzzerPin, HIGH); // active-low: HIGH = buzzer off (see wiring note above)
+  pinMode(buzzerPin, INPUT); // high-impedance = buzzer off (see wiring note above)
   pinMode(vibrationPin, OUTPUT);
 }
 
@@ -92,10 +97,11 @@ void loop() {
   }
 
   if (pressed) {
-    digitalWrite(buzzerPin, LOW); // active-low: sinks current, completing the 5V-fed buzzer's circuit
+    pinMode(buzzerPin, OUTPUT);
+    digitalWrite(buzzerPin, LOW); // sinks current, completing the 5V-fed buzzer's circuit
     analogWrite(vibrationPin, VIBRATION_INTENSITY);
   } else {
-    digitalWrite(buzzerPin, HIGH); // only 3.3V across the buzzer - below its 4V minimum, so it's silent
+    pinMode(buzzerPin, INPUT); // high-impedance: no current path at all, so it's reliably silent
     analogWrite(vibrationPin, 0);
   }
 
