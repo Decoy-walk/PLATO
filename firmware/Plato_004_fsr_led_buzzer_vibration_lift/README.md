@@ -29,6 +29,8 @@ like a windshield-wiper linkage.
                                                    resonance plate
 ```
 
+![Slider-crank lift mechanism diagram, showing the servo horn as crank, a connecting rod to a vertically-guided slider carrying the resonance plate, with the plate's lowered and raised positions overlaid](slider_crank_diagram.png)
+
 - **Servo horn = crank.** A pin/screw mounted off-center on the horn
   (crank radius — start around **10mm**) traces an arc as the servo sweeps
   between `SERVO_MIN_ANGLE` and `SERVO_MAX_ANGLE`.
