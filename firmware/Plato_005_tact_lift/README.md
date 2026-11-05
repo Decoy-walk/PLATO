@@ -25,6 +25,10 @@ build is going for. So instead: a (debounced) press flips a `liftRunning`
 flag, and the lift free-runs at a fixed speed until the next press flips
 it off again.
 
+A wiring diagram covering just this circuit is at
+`hardware/cad/plato_005_wiring_diagram.dxf` (same ezdxf-generated,
+Fusion-360-importable format as the other diagrams in that folder).
+
 ## Wiring (new breadboard, just two components)
 
 - **Tact switch**: one leg → `D2`, other leg → `GND`.

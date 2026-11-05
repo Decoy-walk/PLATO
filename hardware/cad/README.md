@@ -55,6 +55,11 @@ and `firmware/Plato_002_fsr_led_buzzer_vibration/README.md`.
 Pick whichever matches the physical breadboard actually on hand — they're
 electrically equivalent, just wired differently.
 
+- **`plato_005_wiring_diagram.dxf`** — covers the much simpler
+  `firmware/Plato_005_tact_lift/` circuit instead (tact switch + servo
+  only, no FSR/LED/buzzer/vibration). Same ezdxf/import workflow as the
+  two above. Layers: `BOARD`, `WIRES`, `COMPONENTS`, `LABELS`, `NOTES`.
+
 ## Mechanical parts
 
 - **`plato_004_lift_parts.dxf`** — flat profiles for the three custom
