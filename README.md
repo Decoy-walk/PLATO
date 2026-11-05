@@ -94,6 +94,12 @@ wired in parallel; `EN` pins are separate so the firmware can choose which
   mechanism that physically raises/lowers the resonance plate while
   pressed, instead of only buzzing/vibrating it — lift speed scales with
   press force, same as the vibration motor's intensity.
+- `firmware/Plato_005_tact_lift/` — a simplified standalone build on a
+  fresh breadboard: a tact switch replaces the FSR as the trigger, and
+  the servo lift (same slider-crank mechanism as `Plato_004`, no LED/
+  buzzer/vibration) is the only output. Pressing the switch toggles the
+  lift between running continuously and stopped/at rest, instead of
+  needing to be held.
 
 ## Firmware (`firmware/PLATO_XIAO_SAMD21/`)
 
