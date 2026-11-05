@@ -84,6 +84,12 @@ ADC2처럼 라디오와 ADC 핀이 충돌하는 제약이 없지만, 물리적 �
   주기 위함). `Plato_001_fsr_led`는 Maker Faire에서 실제로 전시됐던 기록
   그대로 건드리지 않고, 새로운 감각 레이어는 별도의 번호가 매겨진 스케치로
   추가합니다.
+- `firmware/Plato_003_fsr_led_buzzer/` — `Plato_002`에서 진동모터 모듈만
+  뺀 버전, 소리 피드백만 원할 때 사용.
+- `firmware/Plato_004_fsr_led_buzzer_vibration_lift/` — `Plato_002`에
+  서보(`SFE-ROB-14760`)로 구동하는 slider-crank 기구를 추가해서, 누르는
+  동안 단순 부저/진동뿐 아니라 울림판 자체를 물리적으로 들어올리고
+  내립니다 — 들어올리는 속도도 진동모터처럼 누르는 힘에 비례합니다.
 
 ## 펌웨어 (`firmware/PLATO_XIAO_SAMD21/`)
 

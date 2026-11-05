@@ -89,6 +89,11 @@ wired in parallel; `EN` pins are separate so the firmware can choose which
   layers land in their own numbered sketch instead.
 - `firmware/Plato_003_fsr_led_buzzer/` — same as `Plato_002` minus the
   vibration motor module, for when only sound feedback is wanted.
+- `firmware/Plato_004_fsr_led_buzzer_vibration_lift/` — extends
+  `Plato_002` with a servo (`SFE-ROB-14760`) driving a slider-crank
+  mechanism that physically raises/lowers the resonance plate while
+  pressed, instead of only buzzing/vibrating it — lift speed scales with
+  press force, same as the vibration motor's intensity.
 
 ## Firmware (`firmware/PLATO_XIAO_SAMD21/`)
 
