@@ -52,6 +52,68 @@ tuned on the bench — crank radius, rod length, and the angle range are all
 physical-build parameters to dial in by testing, not something to get
 exactly right on paper first.
 
+## How to build the mechanism (step-by-step)
+
+Flat profiles for the three custom parts (connecting rod, slider block,
+base bracket) are in `hardware/cad/plato_004_lift_parts.dxf` — import via
+Fusion 360's Insert > Insert DXF into a sketch, one profile per sketch,
+then extrude each to the thickness noted in the DXF (rod ~3-4mm, slider
+and base ~10mm) and 3D print flat (no supports needed). The servo horn
+itself is **not** in the DXF — it ships with the servo and has a
+proprietary spline mount that's easier to drill than to model.
+
+**Parts/materials beyond what's already in the parts list:**
+- 2× smooth guide rods, ~4mm diameter (steel/brass rod is much smoother
+  than printed PLA-on-PLA — worth sourcing if the slider feels gritty),
+  cut to ~60-70mm (stroke + slider height + mounting margin)
+- A few M3 screws + nuts (crank pin, two rod pivots, plate mounting)
+- Glue/tape/zip-ties to seat the servo body in its bracket slot
+
+**Assembly order:**
+
+1. **Print the three parts** from the DXF (rod, slider block, base
+   bracket).
+2. **Drill the crank pin hole.** On one arm of the servo's stock horn,
+   mark a point **10mm** from the center shaft hole and drill a 3.2mm
+   hole there. Insert an M3 screw through it from underneath and secure
+   with a nut on top, snug but still able to spin freely — that screw
+   shank is the crank pin the connecting rod will ride on.
+3. **Zero the horn before locking it on.** Power the servo and command it
+   to `SERVO_MIN_ANGLE` (upload the firmware, or run a throwaway test
+   sketch that just does `servo.write(20)`) *before* pressing the drilled
+   horn onto the servo spline — this way the physical "lowered" position
+   matches what the firmware thinks is lowered. Lock it with the horn's
+   retaining screw.
+4. **Seat the two guide rods** vertically into the base bracket's rail
+   holes (press-fit, add a drop of CA glue/epoxy if loose), parallel,
+   28mm apart.
+5. **Slide the slider block onto the rails.** It should move up/down
+   under light finger pressure with no side-to-side wobble or binding —
+   if it's tight, slightly ream the rail holes; if it's wobbly, the holes
+   are too loose (shim or reprint with tighter clearance).
+6. **Connect the linkage:** connecting rod's one eyelet over the crank
+   pin (secure with a washer + nut loose enough to pivot freely, not
+   locked tight), other eyelet over a screw through the slider block's
+   pivot hole, same free-pivoting fit at both ends.
+7. **Mount the servo body** into the base bracket's servo slot (hot glue
+   or double-sided tape for a prototype — the DXF's slot dimensions are
+   generic, **measure your actual servo and adjust before cutting**).
+8. **Test before attaching the plate.** Upload the firmware and run the
+   mechanism empty (no plate) through several full cycles first, watching
+   for binding or the rod popping off a pivot — much easier to fix without
+   the plate in the way.
+9. **Attach the resonance plate** to the slider block's two M3 mounting
+   holes once the bare mechanism runs smoothly.
+
+**If it binds or feels wrong:**
+- Binding near the sweep extremes → narrow `SERVO_MIN_ANGLE`/
+  `SERVO_MAX_ANGLE` in firmware first (cheap to test), or physically ream
+  the rail holes if it's friction, not geometry.
+- Motion too small → re-drill the horn's crank pin hole slightly farther
+  out (bigger radius) and/or widen the angle range.
+- Motion feels jerky/mechanical → lower `SERVO_STEP_DEGREES` in firmware
+  for smaller, smoother steps.
+
 ## Wiring (adds to the Plato_002 breadboard)
 
 Builds on `Plato_002_fsr_led_buzzer_vibration`'s wiring (FSR/LED/buzzer/

@@ -55,6 +55,17 @@ and `firmware/Plato_002_fsr_led_buzzer_vibration/README.md`.
 Pick whichever matches the physical breadboard actually on hand — they're
 electrically equivalent, just wired differently.
 
+## Mechanical parts
+
+- **`plato_004_lift_parts.dxf`** — flat profiles for the three custom
+  3D-printed parts in `firmware/Plato_004_fsr_led_buzzer_vibration_lift/`'s
+  servo slider-crank mechanism (connecting rod, slider block, base
+  bracket). Also generated with ezdxf, same import method as the wiring
+  diagrams above (**Insert > Insert DXF**, then extrude each profile to
+  the thickness noted on the sheet). The servo's own horn isn't included —
+  see that folder's README for why (proprietary spline, easier to drill
+  the stock part than model it) and the full build/assembly steps.
+
 ## Adding a new export
 
 From your local machine (this repo isn't checked out where Fusion 360 runs):
