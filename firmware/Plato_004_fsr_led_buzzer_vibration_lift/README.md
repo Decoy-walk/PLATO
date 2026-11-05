@@ -145,12 +145,36 @@ proprietary spline mount that's easier to drill than to model.
    the mechanism still works with a smaller crank radius, just a shorter
    stroke (adjust `SERVO_MIN_ANGLE`/`SERVO_MAX_ANGLE` afterward if the
    resulting stroke feels too short).
-3. **Zero the horn before locking it on.** Power the servo and command it
-   to `SERVO_MIN_ANGLE` (upload the firmware, or run a throwaway test
-   sketch that just does `servo.write(20)`) *before* pressing the drilled
-   horn onto the servo spline — this way the physical "lowered" position
-   matches what the firmware thinks is lowered. Lock it with the horn's
-   retaining screw.
+3. **Zero the horn before locking it on.** Why this matters: a servo
+   shaft's spline lets the horn be pressed on at many different
+   rotational offsets, so attaching it "blind" means the firmware's idea
+   of 20° and the horn's actual physical direction have no fixed
+   relationship — worst case, the linkage ends up swinging the wrong way
+   or binding against itself. To fix that relationship before it's ever
+   ambiguous:
+   1. Wire up just the servo (`D1` signal, XIAO `5V` power, `GND`) —
+      the horn stays off for now.
+   2. Upload a throwaway test sketch that holds the servo at
+      `SERVO_MIN_ANGLE` (20°) and does nothing else:
+      ```cpp
+      #include <Servo.h>
+      Servo s;
+      void setup() { s.attach(1); s.write(20); }  // D1, SERVO_MIN_ANGLE
+      void loop() {}
+      ```
+      (Uploading the real `Plato_004`/`Plato_005` firmware also works,
+      since it starts at `SERVO_MIN_ANGLE` too — the test sketch is just
+      simpler to reason about for this one step.)
+   3. Power it up and let the servo settle at 20° — it holds that
+      position continuously as long as it stays powered and signaled.
+   4. **Without powering it off**, press the drilled horn onto the
+      spline, oriented so the crank pin points roughly toward where the
+      slider will be.
+   5. Secure the horn with its retaining screw (comes with the servo)
+      while it's still sitting at that position.
+   6. From now on, commanding `SERVO_MIN_ANGLE` in firmware returns the
+      horn to exactly this physical orientation — the "lowered" position
+      is locked in.
 4. **Seat the two guide rods** vertically into the base bracket's rail
    holes (press-fit, add a drop of CA glue/epoxy if loose), parallel,
    28mm apart.
