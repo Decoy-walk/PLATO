@@ -134,6 +134,17 @@ proprietary spline mount that's easier to drill than to model.
    hole there. Insert an M3 screw through it from underneath and secure
    with a nut on top, snug but still able to spin freely — that screw
    shank is the crank pin the connecting rod will ride on.
+
+   ![Diagram showing where to drill the crank pin hole: measure 10mm outward from the servo shaft center along any one arm of the stock horn, mark, and drill a 3.2mm hole for an M3 screw](crank_pin_drill_diagram.png)
+
+   Stock horn shapes vary by servo (the X/cross shown is typical for this
+   size class, but yours may have fewer/more arms or a row of adjustment
+   holes already in it) — pick whichever usable arm you have, and measure
+   from the **shaft center**, not the arm's own tip. If no arm is long
+   enough for a full 10mm, use whatever radius the longest arm allows;
+   the mechanism still works with a smaller crank radius, just a shorter
+   stroke (adjust `SERVO_MIN_ANGLE`/`SERVO_MAX_ANGLE` afterward if the
+   resulting stroke feels too short).
 3. **Zero the horn before locking it on.** Power the servo and command it
    to `SERVO_MIN_ANGLE` (upload the firmware, or run a throwaway test
    sketch that just does `servo.write(20)`) *before* pressing the drilled
