@@ -140,8 +140,11 @@ glance than opening Fusion 360):
 2. **Drill the crank pin hole.** On one arm of the servo's stock horn,
    mark a point **10mm** from the center shaft hole and drill a 3.2mm
    hole there. Insert an M3 screw through it from underneath and secure
-   with a nut on top, snug but still able to spin freely — that screw
-   shank is the crank pin the connecting rod will ride on.
+   with a nut tightened **firmly** against the horn (this nut locks the
+   screw rigidly in place — it's the connecting rod that spins freely
+   later, not this joint). That screw shank, sticking up above the nut,
+   is the crank pin the connecting rod will ride on — see "Connect the
+   linkage" below for how the rod actually attaches to it.
 
    ![Diagram showing where to drill the crank pin hole: measure 10mm outward from the servo shaft center along any one arm of the stock horn, mark, and drill a 3.2mm hole for an M3 screw](crank_pin_drill_diagram.png)
 
@@ -192,10 +195,27 @@ glance than opening Fusion 360):
    are too loose (shim or reprint with tighter clearance).
 
    ![Side-view diagram showing the base bracket at the bottom with two guide rods pressed into its rail holes, the slider block threaded onto those rods partway up (shown at a lowered and a raised position), its connecting-rod pivot hole, and the resonance plate mounted on top](guide_rod_slider_diagram.png)
-6. **Connect the linkage:** connecting rod's one eyelet over the crank
-   pin (secure with a washer + nut loose enough to pivot freely, not
-   locked tight), other eyelet over a screw through the slider block's
-   pivot hole, same free-pivoting fit at both ends.
+6. **Connect the linkage.** Both ends (crank pin and slider pivot) are
+   built the same way — a double-nut pivot:
+   1. The crank pin end already has its screw+lock-nut from step 2
+      (screw through the horn, nut tightened firmly against it from the
+      other side) — that lock nut is what the rod will actually rest on.
+      Build the slider end the same way first: an M3 screw through the
+      slider's pivot hole, with a nut tightened firmly against the
+      slider on the back side.
+   2. Slip the connecting rod's eyelet over the now-exposed screw shank
+      at each end, resting on top of that lock nut.
+   3. Thread a second nut on top at each end — just **snug, not tight**,
+      leaving a hair of play so the eyelet can still spin freely around
+      the shank. A drop of thread-locker (or nail polish) on this second
+      nut only stops it vibrating loose over time, without needing to
+      clamp it down tight.
+
+   ![Cross-section diagram of one pivot joint: a fixed part (horn arm or slider block) with a screw through it, a lock nut tightened firmly against the fixed part, the connecting rod's eyelet resting loosely on top of that nut free to rotate, and a second retaining nut threaded on snug but not tight](pivot_joint_diagram.png)
+
+   If it still binds instead of swinging freely, the retaining nut is too
+   tight — back it off a fraction of a turn at a time until the rod
+   swings under its own weight.
 7. **Mount the servo body** into the base bracket's servo slot (hot glue
    or double-sided tape for a prototype — the DXF's slot dimensions are
    generic, **measure your actual servo and adjust before cutting**).
