@@ -124,7 +124,7 @@ glance than opening Fusion 360):
 
 ![Slider block dimensions: 36x20mm body, two ⌀4.3mm rail holes 28mm apart, a ⌀3.2mm connecting-rod pivot hole, and two ⌀3.2mm plate mounting holes 20mm apart](slider_block_diagram.png)
 
-![Base bracket dimensions: 50x30mm body, two ⌀4.3mm rail mounting holes 28mm apart, and a 24x13mm servo body slot (verify against your actual servo before cutting)](base_bracket_diagram.png)
+![Base bracket dimensions: 50x30mm body, two ⌀4.3mm rail mounting holes 28mm apart, and a 29.5x14.1mm servo body slot (ROB-14760 body plus clearance - dry-fit before gluing since print tolerance varies)](base_bracket_diagram.png)
 
 **Parts/materials beyond what's already in the parts list:**
 - 2× smooth guide rods, ~4mm diameter (steel/brass rod is much smoother
@@ -216,9 +216,23 @@ glance than opening Fusion 360):
    If it still binds instead of swinging freely, the retaining nut is too
    tight — back it off a fraction of a turn at a time until the rod
    swings under its own weight.
-7. **Mount the servo body** into the base bracket's servo slot (hot glue
-   or double-sided tape for a prototype — the DXF's slot dimensions are
-   generic, **measure your actual servo and adjust before cutting**).
+7. **Mount the servo body** into the base bracket's servo slot. The
+   slot's default size (29.5 x 14.1mm) is the `ROB-14760`'s own body
+   (28.8 x 13.8mm per SparkFun's listing) plus a small clearance margin —
+   print tolerance varies by printer, so **dry-fit it first with no
+   glue**: it should slide in snugly by hand, not need force. Too tight,
+   ream the slot slightly; too loose, shim one side with a strip of tape
+   before gluing.
+
+   ![Diagram showing how the servo body drops into the base bracket's slot: output shaft/horn facing up toward the slider and connecting rod, the 3-wire cable exiting the bottom clear of the moving slider, and hot glue or double-sided tape along the body-to-slot-wall contact](servo_mount_diagram.png)
+
+   Orientation matters: drop it in with the **output shaft (horn) side
+   facing up**, toward the slider/connecting rod, and the **3-wire cable
+   exiting the bottom**, clear of where the slider moves. Once positioned
+   correctly, run a bead of hot glue (or a strip of double-sided foam
+   tape) along the body-to-slot-wall contact on at least two sides —
+   enough to hold it still under the linkage's load, not meant as a
+   permanent structural bond (you may want to swap servos later).
 8. **Test before attaching the plate.** Upload the firmware and run the
    mechanism empty (no plate) through several full cycles first, watching
    for binding or the rod popping off a pivot — much easier to fix without
