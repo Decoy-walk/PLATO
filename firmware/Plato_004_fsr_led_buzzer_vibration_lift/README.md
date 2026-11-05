@@ -238,7 +238,20 @@ glance than opening Fusion 360):
    for binding or the rod popping off a pivot — much easier to fix without
    the plate in the way.
 9. **Attach the resonance plate** to the slider block's two M3 mounting
-   holes once the bare mechanism runs smoothly.
+   holes once the bare mechanism runs smoothly. Which method depends on
+   what your plate actually is:
+   - **Screwed on** — if it's flat, rigid, and can be drilled: M3 screws
+     up from underneath the slider, threading into a heat-set insert (or
+     a nut captured in a pocket on top if you don't have inserts). Most
+     secure, fully removable later.
+   - **Glued/taped on** — if it's irregular, curved, or is already part
+     of the existing MFT26 "E. Modular" structure (so drilling into it
+     isn't an option): hot glue or VHB/double-sided foam tape across the
+     full slider-to-plate contact area. The two M3 holes become optional
+     registration marks rather than functional fasteners. Faster, no
+     drilling needed, but less securely fixed than screws.
+
+   ![Diagram comparing the two plate mounting options: screwed on with a threaded insert for a flat drillable plate, versus glued or taped on across the full contact area for an irregular plate](plate_mount_diagram.png)
 
 **If it binds or feels wrong:**
 - Binding near the sweep extremes → narrow `SERVO_MIN_ANGLE`/
