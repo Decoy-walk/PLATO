@@ -8,6 +8,9 @@ force-proportional intensity are all unchanged — see
 `Plato_002_fsr_led_buzzer_vibration/README.md` for the reasoning behind
 each of those. This README only covers the new lift layer.
 
+Full shopping list (electronics, printed parts, hardware, consumables,
+with quantities) is in [`BOM.md`](BOM.md).
+
 ## Full build order (checklist)
 
 Start the 3D prints first (they take hours) and do the rest while they run.

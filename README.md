@@ -93,7 +93,8 @@ wired in parallel; `EN` pins are separate so the firmware can choose which
   `Plato_002` with a servo (`SFE-ROB-14760`) driving a slider-crank
   mechanism that physically raises/lowers the resonance plate while
   pressed, instead of only buzzing/vibrating it — lift speed scales with
-  press force, same as the vibration motor's intensity.
+  press force, same as the vibration motor's intensity. Full parts list:
+  `firmware/Plato_004_fsr_led_buzzer_vibration_lift/BOM.md`.
 - `firmware/Plato_005_tact_lift/` — a simplified standalone build on a
   fresh breadboard: a tact switch replaces the FSR as the trigger, and
   the servo lift (same slider-crank mechanism as `Plato_004`, no LED/
