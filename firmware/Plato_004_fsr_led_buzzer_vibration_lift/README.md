@@ -110,6 +110,14 @@ exactly right on paper first.
 
 ## How to build the mechanism (step-by-step)
 
+![Full assembly overview diagram: base bracket with the servo inside at the bottom, its horn/crank pin, the connecting rod running up to the slider block's pivot, the slider threaded on two guide rods, and the resonance plate on top, each part labeled and pointing to the more detailed diagram that covers it](full_assembly_diagram.png)
+
+The diagram above is the big-picture overview — every part it labels has
+its own more detailed diagram later in this section (drilling the crank
+pin, the pivot joints, where the rods/slider sit, mounting the servo,
+mounting the plate). Start there for the full step-by-step; come back to
+this one if you lose track of how it all fits together.
+
 Flat profiles for the three custom parts (connecting rod, slider block,
 base bracket) are in `hardware/cad/plato_004_lift_parts.dxf` — import via
 Fusion 360's Insert > Insert DXF into a sketch, one profile per sketch,
