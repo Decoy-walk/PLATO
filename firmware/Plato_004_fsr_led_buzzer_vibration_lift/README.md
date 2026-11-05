@@ -190,6 +190,8 @@ glance than opening Fusion 360):
    under light finger pressure with no side-to-side wobble or binding —
    if it's tight, slightly ream the rail holes; if it's wobbly, the holes
    are too loose (shim or reprint with tighter clearance).
+
+   ![Side-view diagram showing the base bracket at the bottom with two guide rods pressed into its rail holes, the slider block threaded onto those rods partway up (shown at a lowered and a raised position), its connecting-rod pivot hole, and the resonance plate mounted on top](guide_rod_slider_diagram.png)
 6. **Connect the linkage:** connecting rod's one eyelet over the crank
    pin (secure with a washer + nut loose enough to pivot freely, not
    locked tight), other eyelet over a screw through the slider block's
