@@ -118,6 +118,14 @@ and base ~10mm) and 3D print flat (no supports needed). The servo horn
 itself is **not** in the DXF — it ships with the servo and has a
 proprietary spline mount that's easier to drill than to model.
 
+Dimensioned reference diagrams for the two plate-shaped parts (hole sizes
+and spacing — the same numbers as the DXF, just easier to read at a
+glance than opening Fusion 360):
+
+![Slider block dimensions: 36x20mm body, two ⌀4.3mm rail holes 28mm apart, a ⌀3.2mm connecting-rod pivot hole, and two ⌀3.2mm plate mounting holes 20mm apart](slider_block_diagram.png)
+
+![Base bracket dimensions: 50x30mm body, two ⌀4.3mm rail mounting holes 28mm apart, and a 24x13mm servo body slot (verify against your actual servo before cutting)](base_bracket_diagram.png)
+
 **Parts/materials beyond what's already in the parts list:**
 - 2× smooth guide rods, ~4mm diameter (steel/brass rod is much smoother
   than printed PLA-on-PLA — worth sourcing if the slider feels gritty),
