@@ -8,6 +8,62 @@ force-proportional intensity are all unchanged — see
 `Plato_002_fsr_led_buzzer_vibration/README.md` for the reasoning behind
 each of those. This README only covers the new lift layer.
 
+## Full build order (checklist)
+
+Start the 3D prints first (they take hours) and do the rest while they run.
+
+**0. Kick off prints**
+- [ ] Print the 3 parts from `hardware/cad/plato_004_lift_parts.dxf`
+      (connecting rod, slider block, base bracket) — see "How to build
+      the mechanism" below for extrusion thickness per part.
+
+**1. Breadboard wiring** (can do while prints run — see "Wiring" below and
+`Plato_001_fsr_led`/`Plato_002_fsr_led_buzzer_vibration`'s READMEs for the
+rows this builds on)
+- [ ] FSR402 + LED (`Plato_001` base): `A0` ← FSR divider, `D9` → 330Ω →
+      LED → GND
+- [ ] Buzzer (`Plato_002` addition): `D8` ↔ buzzer `-` (long) lead, XIAO
+      `5V` → buzzer `+` (short) lead
+- [ ] Vibration motor (`Plato_002` addition): `D2` → `IN`, `3V3` → `VCC`,
+      `GND` → `GND`
+- [ ] Servo (this build's addition): `D1` → signal, XIAO `5V` → power
+      (red), `GND` → ground (brown)
+
+**2. Firmware**
+- [ ] Confirm the `Servo` library is installed (Library Manager → "Servo"
+      by Arduino — usually bundled already)
+- [ ] Open `Plato_004_fsr_led_buzzer_vibration_lift.ino`, board = Seeed
+      SAMD Boards > Seeeduino XIAO, upload
+- [ ] Open Serial Monitor @ 9600 baud, press the FSR, confirm
+      `raw`/`conductance`/`brightness`/`pressed` respond sensibly (same
+      calibration check as `Plato_001`)
+
+**3. Mechanical assembly** (once prints finish — full detail in "How to
+build the mechanism" below)
+- [ ] Drill the crank pin hole into the stock servo horn (~10mm radius)
+- [ ] With the firmware already running (servo sitting at
+      `SERVO_MIN_ANGLE`), press the drilled horn onto the servo spline
+      *now*, then lock its retaining screw — this is what makes the
+      physical "lowered" position match the firmware's
+- [ ] Seat the 2 guide rods into the base bracket
+- [ ] Slide the slider block onto the rails — confirm free vertical
+      movement, no binding/wobble, before going further
+- [ ] Connect the linkage: rod eyelet → crank pin, rod eyelet → slider
+      pivot, both loose/free-pivoting
+- [ ] Mount the servo body into the base bracket's slot
+- [ ] Run several press cycles **with no plate attached** — watch for
+      binding or the rod popping off a pivot
+- [ ] Attach the resonance plate to the slider's mounting holes
+
+**4. Final test**
+- [ ] Light press → LED dims, vibration motor barely kicks in, buzzer
+      chirps softly, lift moves slowly
+- [ ] Hard press → all four outputs scale up together
+- [ ] If anything binds, feels too weak, or feels jerky, see the tuning
+      notes in each relevant section below (LED/FSR calibration in
+      `Plato_001`, buzzer/vibration tuning in `Plato_002`, lift tuning
+      further down this file)
+
 ## Why a slider-crank, and why it works with only a servo
 
 The only actuator available for this (`SFE-ROB-14760`) is a hobby **servo**,
